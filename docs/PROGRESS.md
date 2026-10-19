@@ -142,7 +142,22 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
   behind" the segment's start — only the required `[0,1]` projection clamp was built.
 - Verified: `(cd backend && ./mvnw test)` -> BUILD SUCCESS, 23/23 tests (17 prior + 6 new).
 
+## P0-08 — Pressure detector — DONE
+- `com.beyond90.api.analytics.PressureDetector` (Detector D2, docs/04-FOOTBALL-ENGINES.md):
+  within an 8s window (default, inside the doc's required 5-10s band; configurable per call)
+  before a `POSSESSION_CHANGE`, requires >=2 `PRESSURE` events from the possessing team AND a
+  linking `INTERCEPTION`/`PASS` event from that same team in-window. Emits
+  `PRESSURE_ASSOCIATED_TURNOVER` with an explicit non-causal caveat ("NOT evidence that pressure
+  caused the turnover") — satisfies the AC by construction, not just by test assertion.
+- Golden-vector tests (`PressureDetectorTest`, 6 cases), the first mirroring the real M01 fixture
+  values (`evt_press_1/2`, `evt_interception_1`, `evt_poss_1`) exactly: two-press-plus-turnover
+  (positive, matches M01), turnover without pressure, late pressure after the turnover, cross-team
+  ID mismatch, below-minimum single pressure event, and pressure events falling outside a
+  shortened window — all four doc-specified negative cases covered plus two extra boundary cases.
+- Verified: `(cd backend && ./mvnw test)` -> BUILD SUCCESS, 29/29 tests (23 prior + 6 new).
+
 ## Next task
-P0-08 — Pressure detector (Day 3). Detector D2: derive M01 explanation evidence from a 5-10s
-prior window plus turnover, using positive/negative fixtures. AC: unsupported causal language
-disallowed (emit `PRESSURE_ASSOCIATED_TURNOVER`, never "pressure caused the turnover").
+P0-09 — X-Ray DTO endpoint (Day 3). `GET /moments/m01/xray`: REST data with geometry IDs, linked
+features and missingness, wiring D1 (lane clearance) and D2 (pressure) into the contract's
+`XRayResponse`/`InsightMetric`/`GeometryOverlay` schemas. AC: response valid, all referenced IDs
+resolve. Completes Gate G3 ("ONE truthful insight").
