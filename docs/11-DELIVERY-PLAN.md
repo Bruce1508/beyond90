@@ -22,7 +22,7 @@ Timebox: **Oct 19 through Oct 27, 2026** (deadline 23:59 Pacific, Oct 28 02:59 T
 **Gate G2:** end-to-end one replay path running without model provider — **MET**, verified live via Playwright (screenshot + console check, 0 errors); if behind, build 2D first and defer complex 3D effects.
 
 ## Day 3 — Oct 21: Real geometry analytics
-- [ ] **P0-07 Lane metrics + tests (2h)**. Segment distance clamping and defender count with golden vectors. **AC:** metrics include event/snapshot refs and `algorithmVersion`.
+- [x] **P0-07 Lane metrics + tests (2h)**. Segment distance clamping and defender count with golden vectors. **AC:** metrics include event/snapshot refs and `algorithmVersion`.
 - [ ] **P0-08 Pressure detector (2h)**. Derive M01 explanation evidence; short prior window and turnover; positive/negative fixtures. **AC:** unsupported causal language disallowed.
 - [ ] **P0-09 X-Ray DTO endpoint (1.5h)**. REST data with geometry IDs, linked features and missingness; JSON snapshot tests. **AC:** `/moments/m01/xray` valid, all referenced IDs resolve.
 **Gate G3:** ONE truthful insight. If failing, do not begin agent orchestration.

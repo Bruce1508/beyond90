@@ -123,7 +123,26 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
     exercised this session.
 - `(cd backend && ./mvnw test)`: 17/17 green. `(cd frontend && pnpm lint && pnpm build)`: green.
 
+## P0-07 — Lane metrics + tests — DONE
+- `com.beyond90.api.analytics.LaneClearanceCalculator` (Detector D1, docs/04-FOOTBALL-ENGINES.md):
+  perpendicular distance from each defender to the passer-receiver line segment, projection
+  clamped to `[0,1]`; `clearanceMeters` = min over defenders (passer/receiver excluded);
+  `contested` when `clearanceMeters < thresholdMeters` (default 2.0m, a heuristic per the doc,
+  not an empirical intercept probability). Returns `LaneClearanceResult` carrying `metricId`,
+  `evidenceIds` (snapshotId + considered defender IDs), `algorithmVersion` (`D1.v1`), `contested`,
+  `defenderCount`, `contestingDefenderCount` — satisfies the AC directly (no separate DTO mapping
+  needed yet; P0-09 will map this into the contract's `InsightMetric`).
+- Golden-vector tests (`LaneClearanceCalculatorTest`, 6 cases) per the doc's own D1 test list:
+  straight horizontal segment, defender beyond endpoint (projection clamps to the receiver),
+  near-zero-length pass (segment collapses to the passer point), no defenders (clearance =
+  `+Infinity`, not contested), attack-direction invariance (reversing passer/receiver doesn't
+  change the perpendicular distance — the calculator is purely geometric on x/y), and
+  passer/receiver self-exclusion from the defender set.
+- Not implemented (optional per the doc, out of scope for this AC): excluding defenders "far
+  behind" the segment's start — only the required `[0,1]` projection clamp was built.
+- Verified: `(cd backend && ./mvnw test)` -> BUILD SUCCESS, 23/23 tests (17 prior + 6 new).
+
 ## Next task
-P0-07 — Lane metrics + tests (Day 3). Segment distance clamping and defender count with golden
-vectors. AC: metrics include event/snapshot refs and `algorithmVersion`. This starts the real
-football-analytics engine (Gate G3: "ONE truthful insight").
+P0-08 — Pressure detector (Day 3). Detector D2: derive M01 explanation evidence from a 5-10s
+prior window plus turnover, using positive/negative fixtures. AC: unsupported causal language
+disallowed (emit `PRESSURE_ASSOCIATED_TURNOVER`, never "pressure caused the turnover").
