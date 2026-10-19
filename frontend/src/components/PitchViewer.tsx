@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { hasWebGl } from "@/lib/webgl";
 import { Pitch2D } from "@/components/Pitch2D";
 import { Pitch3D } from "@/components/Pitch3D";
-import type { BallPosition, PlayerPose, PlayerSummary } from "@/lib/api";
+import type { BallPosition, GeometryOverlay, PlayerPose, PlayerSummary } from "@/lib/api";
 
 interface PitchViewerProps {
   players: PlayerSummary[];
   homeTeam: string;
   playerPoses: PlayerPose[];
   ball: BallPosition | null;
+  geometry?: GeometryOverlay[];
 }
 
 /** AGENTS.md: "production build and core workflow must work without WebGL." */

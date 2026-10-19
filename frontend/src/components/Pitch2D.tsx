@@ -1,17 +1,20 @@
 import { PITCH_LENGTH_M, PITCH_WIDTH_M } from "@/lib/pitch";
-import type { BallPosition, PlayerPose, PlayerSummary } from "@/lib/api";
+import type { BallPosition, GeometryOverlay, PlayerPose, PlayerSummary } from "@/lib/api";
 
 interface Pitch2DProps {
   players: PlayerSummary[];
   homeTeam: string;
   playerPoses: PlayerPose[];
   ball: BallPosition | null;
+  geometry?: GeometryOverlay[];
 }
+
+const XRAY_OVERLAY_COLOR = "#f59e0b";
 
 const HOME_COLOR = "#3b82f6";
 const AWAY_COLOR = "#ef4444";
 
-export function Pitch2D({ players, homeTeam, playerPoses, ball }: Pitch2DProps) {
+export function Pitch2D({ players, homeTeam, playerPoses, ball, geometry = [] }: Pitch2DProps) {
   const teamByPlayerId = new Map(players.map((p) => [p.playerId, p.teamId]));
 
   return (
@@ -43,6 +46,20 @@ export function Pitch2D({ players, homeTeam, playerPoses, ball }: Pitch2DProps) 
       })}
 
       {ball && <circle cx={ball.x} cy={ball.y} r={0.7} fill="white" stroke="black" strokeWidth={0.1} />}
+
+      {/* X-Ray evidence overlay: every point traces back to overlay.evidenceIds (real event IDs). */}
+      {geometry.map((overlay, index) => (
+        <polyline
+          key={`${overlay.type}-${index}`}
+          points={overlay.points.map((p) => `${p.x},${p.y}`).join(" ")}
+          fill="none"
+          stroke={XRAY_OVERLAY_COLOR}
+          strokeWidth={0.4}
+          strokeDasharray="1.5,1"
+        >
+          <title>X-Ray evidence: {overlay.evidenceIds.join(", ")}</title>
+        </polyline>
+      ))}
     </svg>
   );
 }

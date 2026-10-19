@@ -186,8 +186,37 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
 - **Gate G3 ("ONE truthful insight") MET** — a real, evidence-backed, non-causal insight is served
   over a real HTTP endpoint for a real fixture moment.
 
+## P0-10 — 3D tactical overlay — DONE
+- `frontend/src/lib/api.ts`: `getXRay(momentId)` + `InsightMetric`/`GeometryOverlay`/`XRayResponse`
+  types mirroring the P0-09 contract response exactly.
+- `Pitch2D.tsx` / `Pitch3D.tsx`: both gained an optional `geometry?: GeometryOverlay[]` prop,
+  rendered as an amber dashed line (SVG `<polyline>` with a `<title>` for 2D; drei `<Line dashed>`
+  for 3D) — visually distinct from real tracked positions, since it's derived evidence, not a
+  tracked path. `PitchViewer.tsx` passes it through unchanged (existing `{...props}` spread).
+- Camera X-Ray focus: `Pitch3D` computes the overlay's centroid (`overlayFocusTarget`, memoized on
+  a stable key so `OrbitControls` doesn't fight the user's own drag every render) and sets it as
+  `OrbitControls`'s `target`, recentering the view on the evidence when X-Ray mode is active.
+- `XRayPanel.tsx` (new): accessible DOM text region (`aria-label`, real `<h2>`/`<p>`/`<ul>`, not
+  relying on hover-only SVG `<title>` or orbiting the 3D scene) listing every metric's ID, value,
+  algorithm version, evidenceIds, and caveats — satisfies the AC "traceable to metric/snapshot ID"
+  independent of whether WebGL is available.
+- `page.tsx`: a "Show X-Ray evidence (m01)" toggle button lazily fetches `/moments/m01/xray` on
+  first click (no unconditional extra request on page load) and feeds `geometry` into
+  `PitchViewer` + renders `XRayPanel`; has its own loading/error state, consistent with the
+  existing match/snapshot fetch pattern.
+- Not implemented: only `LINE` overlays exist to render (D1/lane-clearance's `CIRCLE`/`POLYGON`
+  cases aren't wired backend-side yet per P0-09's note — nothing to build against until P0-11).
+- Verified: `(cd frontend && pnpm lint && pnpm build)` -> both green (TypeScript clean).
+  **Verified live**: started both dev servers, used Playwright MCP — clicked the toggle,
+  confirmed the accessible panel renders the real metric/evidenceIds/caveat text, and the amber
+  dashed overlay line is visible on the 3D pitch between the two real PRESSURE event locations,
+  camera recentered near it. Console: 0 errors (1 benign pre-existing THREE.Clock warning).
+  **Not verified live** (same gap noted in P0-05/06): the 2D WebGL-off fallback path specifically
+  — code is symmetric with the 3D path and shares the same `geometry` prop/data, but no
+  WebGL-disabled browser context was exercised this session either.
+
 ## Next task
-P0-10 — 3D tactical overlay (Day 4). Wire the X-Ray response's `geometry` (LINE overlay +
-evidenceIds) into the 3D/2D pitch viewer: camera X-Ray focus, pressure halo, accessible DOM text.
-AC: any highlighted geometry traceable to metric/snapshot ID. Starts Gate G4 ("why does the AI say
-that? within one click").
+P0-11 — M02/M03 fixtures (Day 4). Author an off-ball snapshot pair + a decision-fork scene with
+a real PASS event (passer/receiver/defenders), so D1 (lane clearance) finally has genuine evidence
+to wire into the X-Ray endpoint. AC: three demonstrable moments, 22-player scene where required;
+missingness tests and scenario labeling.

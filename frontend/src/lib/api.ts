@@ -57,3 +57,32 @@ export function getMatch(matchId: string): Promise<MatchSummary> {
 export function getSnapshots(matchId: string): Promise<SnapshotsResponse> {
   return getJson(`/api/v1/matches/${matchId}/snapshots`);
 }
+
+export interface InsightMetric {
+  metricId: string;
+  value: number;
+  unit: string;
+  evidenceIds: string[];
+  algorithmVersion: string;
+}
+
+export interface GeometryOverlay {
+  type: "LINE" | "CIRCLE" | "POLYGON";
+  points: { x: number; y: number }[];
+  evidenceIds: string[];
+}
+
+export interface XRayResponse {
+  insightId: string;
+  momentId: string;
+  scenarioVersion: string;
+  confidence: "SUPPORTED" | "PARTIAL" | "INSUFFICIENT";
+  metrics: InsightMetric[];
+  geometry: GeometryOverlay[];
+  evidenceIds: string[];
+  caveats: string[];
+}
+
+export function getXRay(momentId: string): Promise<XRayResponse> {
+  return getJson(`/api/v1/moments/${momentId}/xray`);
+}

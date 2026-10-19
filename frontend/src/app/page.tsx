@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getMatch, getSnapshots, type MatchSummary, type SnapshotsResponse } from "@/lib/api";
+import { getMatch, getSnapshots, getXRay, type MatchSummary, type SnapshotsResponse, type XRayResponse } from "@/lib/api";
 import { PitchViewer } from "@/components/PitchViewer";
 import { PlaybackControls } from "@/components/PlaybackControls";
+import { XRayPanel } from "@/components/XRayPanel";
 
 const MATCH_ID = "demo-001";
+const XRAY_MOMENT_ID = "m01";
 
 /** Sparse curated snapshots only (contracts/openapi.yaml): show the latest
  * snapshot at or before the cursor, never an interpolated/fabricated position. */
@@ -25,6 +27,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [currentMs, setCurrentMs] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [xray, setXray] = useState<XRayResponse | null>(null);
+  const [xrayError, setXrayError] = useState<string | null>(null);
   const rafRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number | null>(null);
 
@@ -95,6 +99,7 @@ export default function Home() {
         homeTeam={match.homeTeam}
         playerPoses={activeSnapshot?.playerPoses ?? []}
         ball={activeSnapshot?.ball ?? null}
+        geometry={xray?.geometry}
       />
       <PlaybackControls
         currentMs={currentMs}
@@ -107,6 +112,24 @@ export default function Home() {
           setCurrentMs(ms);
         }}
       />
+      <button
+        type="button"
+        onClick={() => {
+          if (xray) {
+            setXray(null);
+            return;
+          }
+          getXRay(XRAY_MOMENT_ID)
+            .then(setXray)
+            .catch((err: Error) => setXrayError(err.message));
+        }}
+        className="rounded bg-amber-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        aria-pressed={xray !== null}
+      >
+        {xray ? `Hide X-Ray (${XRAY_MOMENT_ID})` : `Show X-Ray evidence (${XRAY_MOMENT_ID})`}
+      </button>
+      {xrayError && <p className="text-sm text-red-400">Could not load X-Ray evidence: {xrayError}</p>}
+      {xray && <XRayPanel xray={xray} />}
     </main>
   );
 }
