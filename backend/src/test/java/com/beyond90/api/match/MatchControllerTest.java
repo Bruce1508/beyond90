@@ -50,6 +50,24 @@ class MatchControllerTest {
 	}
 
 	@Test
+	void snapshotsReturnsBothSnapshotsOrderedByClock() throws Exception {
+		mockMvc.perform(get("/api/v1/matches/demo-001/snapshots"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.snapshots.length()").value(2))
+				.andExpect(jsonPath("$.snapshots[0].snapshotId").value("snap_m01_a"))
+				.andExpect(jsonPath("$.snapshots[0].playerPoses.length()").value(22))
+				.andExpect(jsonPath("$.snapshots[1].snapshotId").value("snap_m01_b"));
+	}
+
+	@Test
+	void snapshotsHonorsTimeRangeFilter() throws Exception {
+		mockMvc.perform(get("/api/v1/matches/demo-001/snapshots").param("startMs", "1316000"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.snapshots.length()").value(1))
+				.andExpect(jsonPath("$.snapshots[0].snapshotId").value("snap_m01_b"));
+	}
+
+	@Test
 	void timelineIsDeterministicAcrossRepeatedCalls() throws Exception {
 		String first = mockMvc.perform(get("/api/v1/matches/demo-001/timeline"))
 				.andReturn().getResponse().getContentAsString();

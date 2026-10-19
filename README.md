@@ -18,14 +18,22 @@ cd backend
 ./mvnw spring-boot:run
 curl http://localhost:8080/actuator/health   # {"status":"UP"}
 
-# Frontend — Next.js 16 / React 19, port 3000
+# Frontend — Next.js 16 / React 19, port 3000 (fetches the backend above at runtime)
 cd frontend
 pnpm install
 pnpm build    # production build
-pnpm dev      # http://localhost:3000, synthetic pitch placeholder
+pnpm dev      # http://localhost:3000 — 3D pitch (2D SVG fallback without WebGL)
 ```
 
-Both commands above were run against a clean clone on 2026-10-19 and completed green (see task `P0-01` report).
+The backend must be running for the frontend to show real data (it fetches `/api/v1/matches/demo-001`
+and `/snapshots`); otherwise the page shows an explicit "could not reach the API" state. If port 3000
+is taken, `pnpm dev` falls back to 3001+ — `backend/.../WebConfig.java`'s CORS allowlist already
+covers both. Override the API origin with `NEXT_PUBLIC_API_BASE_URL` if the backend isn't on
+`localhost:8080`.
+
+Both commands above were run against a clean clone and verified green on 2026-10-19 (`./mvnw test`,
+`pnpm build`); the full playback UI was verified live in a real browser via Playwright (see
+`docs/PROGRESS.md`, task P0-05/06).
 
 ## Start here (human)
 1. Read `docs/00-EXECUTIVE-BRIEF.md` and `docs/01-PRD.md`.

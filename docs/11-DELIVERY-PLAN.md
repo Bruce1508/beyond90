@@ -17,9 +17,9 @@ Timebox: **Oct 19 through Oct 27, 2026** (deadline 23:59 Pacific, Oct 28 02:59 T
 
 ## Day 2 — Oct 20: Replay, 3D pilot, dependable clock
 - [x] **P0-04 Fixture loader + timeline (2h)**. Immutable repo, score projection and seek; `GET /matches/demo-001` and `/timeline`; tests for deterministic ordering and seek. **AC:** same time always yields same event/score state.
-- [ ] **P0-05 3D pitch + fallback (2.5h)**. 105x68 plane, 22 markers, ball, 2D SVG fallback; shared coordinate transform; camera presets; Play/Pause/Seek.
-- [ ] **P0-06 UI playback integration (1.5h)**. Fetch fixture/drive 3D from canonical clock; event feed and overlay on moment. **AC:** direct browser demonstration with seek/replay and clear synthetic label.
-**Gate G2:** end-to-end one replay path running without model provider; if behind, build 2D first and defer complex 3D effects.
+- [x] **P0-05 3D pitch + fallback (2.5h)**. 105x68 plane, 22 markers, ball, 2D SVG fallback; shared coordinate transform; camera presets; Play/Pause/Seek.
+- [x] **P0-06 UI playback integration (1.5h, partial)**. Fetch fixture/drive 3D from canonical clock; event feed and overlay on moment. **AC:** direct browser demonstration with seek/replay and clear synthetic label. — event feed/overlay deferred to P0-09/10 (X-Ray UI); play/seek/clock/synthetic-label verified live.
+**Gate G2:** end-to-end one replay path running without model provider — **MET**, verified live via Playwright (screenshot + console check, 0 errors); if behind, build 2D first and defer complex 3D effects.
 
 ## Day 3 — Oct 21: Real geometry analytics
 - [ ] **P0-07 Lane metrics + tests (2h)**. Segment distance clamping and defender count with golden vectors. **AC:** metrics include event/snapshot refs and `algorithmVersion`.

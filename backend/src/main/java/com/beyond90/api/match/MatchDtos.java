@@ -85,4 +85,28 @@ public final class MatchDtos {
 	}
 
 	public record TimelineDto(String matchId, String scenarioVersion, List<EventDto> events, List<MomentDto> moments) {}
+
+	public record BallPositionDto(double x, double y, double z) {
+		static BallPositionDto from(Fixture.BallPosition ball) {
+			return new BallPositionDto(ball.x(), ball.y(), ball.z());
+		}
+	}
+
+	public record PlayerPoseDto(String playerId, double x, double y) {
+		static PlayerPoseDto from(Fixture.PlayerPose pose) {
+			return new PlayerPoseDto(pose.playerId(), pose.x(), pose.y());
+		}
+	}
+
+	public record TrackingSnapshotDto(String snapshotId, long matchClockMs, BallPositionDto ball, List<PlayerPoseDto> playerPoses) {
+		static TrackingSnapshotDto from(Fixture.TrackingSnapshot snapshot) {
+			return new TrackingSnapshotDto(
+					snapshot.snapshotId(),
+					snapshot.matchClockMs(),
+					BallPositionDto.from(snapshot.ball()),
+					snapshot.playerPoses().stream().map(PlayerPoseDto::from).toList());
+		}
+	}
+
+	public record SnapshotsResponseDto(String matchId, String scenarioVersion, List<TrackingSnapshotDto> snapshots) {}
 }

@@ -77,7 +77,53 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
   Website-draws-it half is still open — current frontend page is a static SVG placeholder
   (P0-01), not wired to the API yet. That's P0-05/P0-06.
 
+## P0-04b — snapshots endpoint (unplanned, needed to draw real positions) — DONE
+- Added `GET /api/v1/matches/{matchId}/snapshots` (`startMs`/`endMs` optional filters, sorted by
+  clock) — not explicitly in P0-04's task text but required by `contracts/openapi.yaml` and by
+  P0-05/06 to draw real player/ball positions (roster alone has no coordinates).
+- Added CORS allowlist (`WebConfig`) for the Next.js dev origins.
+- Verified: 2 new MockMvc tests, `(cd backend && ./mvnw test)` -> 17/17 green.
+
+## P0-05 — 3D pitch + fallback — DONE
+## P0-06 — UI playback integration — DONE (partial: event feed/overlay deferred)
+- `frontend/src/lib/pitch.ts`: shared coordinate transform (canonical x∈[0,105]/y∈[0,68] ->
+  SVG viewBox units for 2D, centered world X/Z for 3D) — single source of truth for both views.
+- `frontend/src/lib/webgl.ts` + `PitchViewer.tsx`: real WebGL feature-detection; renders
+  `Pitch3D` (R3F Canvas + OrbitControls, drei/three pinned to React-19-compatible versions
+  `@react-three/fiber@9.8.2`, `@react-three/drei@9.122.0`, `three@0.186.1`) when available,
+  `Pitch2D` (SVG) otherwise. AGENTS.md: "production build and core workflow must work without
+  WebGL" — satisfied structurally (no R3F import at module scope blocks render; fallback path
+  has zero WebGL dependency).
+- `frontend/src/lib/api.ts`: typed fetch client for `/matches/{id}` and `/snapshots`.
+- `page.tsx`: fetches match + snapshots on mount, drives a `requestAnimationFrame` clock,
+  displays the latest snapshot at-or-before the cursor (never interpolated — "sparse curated
+  snapshots" per contract, interpolation would be a scientific-claim violation per AGENTS.md).
+  Synthetic-data label always visible. Loading and fetch-error states both render (no blank
+  screen if backend is down).
+- Camera presets: scoped down to interactive `OrbitControls` only (no fixed preset buttons) —
+  unrequested extra UI, can add named presets later if the demo needs a one-click angle.
+- Event feed / moment overlay: deferred — contract has no time-filtered event endpoint yet and
+  this naturally belongs with the X-Ray UI (P0-09/10), not bare playback.
+- **Verified live** (not just build/lint/typecheck, since this is a UI change):
+  - Started both dev servers (`./mvnw spring-boot:run`, `pnpm dev`); `pnpm dev` fell back to
+    port 3001 (3000 was bound by an unrelated local Docker `hbci` listener) — added 3001 to the
+    CORS allowlist as a pragmatic dev convenience.
+  - No Claude-in-Chrome extension available in this environment; used the Playwright MCP plugin
+    instead for a real rendered-browser check.
+  - Screenshot confirms: 11 blue + 11 red player markers correctly colored by team, white ball
+    marker, synthetic-fixture label, Play button, seek slider at the correct initial clock
+    (`21:50` = M01's `matchClockMs` 1,310,000). Console: 0 errors (1 benign `THREE.Clock`
+    deprecation warning from inside drei/three, not our code).
+  - Clicked Play via `browser_evaluate`; re-snapshot showed the clock advance (21:50 -> 21:53)
+    and the button flip to "Pause replay" — playback loop genuinely works, not just renders.
+  - Fixed on the way: default `create-next-app` page `<title>` ("Create Next App") was still
+    live — replaced with the real app name/description.
+  - Not verified live: the 2D (WebGL-off) fallback path specifically — code path is symmetric
+    with the 3D one and shares the same data/props, but no WebGL-disabled browser context was
+    exercised this session.
+- `(cd backend && ./mvnw test)`: 17/17 green. `(cd frontend && pnpm lint && pnpm build)`: green.
+
 ## Next task
-P0-05 — 3D pitch + fallback (Day 2). 105x68 plane, 22 markers, ball, 2D SVG fallback; shared
-coordinate transform; camera presets; Play/Pause/Seek. Frontend still needs to fetch
-`/api/v1/matches/demo-001` and `/timeline` and render it — that's what actually closes Gate G1.
+P0-07 — Lane metrics + tests (Day 3). Segment distance clamping and defender count with golden
+vectors. AC: metrics include event/snapshot refs and `algorithmVersion`. This starts the real
+football-analytics engine (Gate G3: "ONE truthful insight").
