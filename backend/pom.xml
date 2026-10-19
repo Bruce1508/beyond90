@@ -65,16 +65,11 @@
 				<directory>${project.basedir}/../contracts</directory>
 				<targetPath>contracts</targetPath>
 			</resource>
-		</resources>
-		<testResources>
-			<testResource>
-				<directory>src/test/resources</directory>
-			</testResource>
-			<testResource>
+			<resource>
 				<directory>${project.basedir}/../examples</directory>
 				<targetPath>examples</targetPath>
-			</testResource>
-		</testResources>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

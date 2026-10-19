@@ -50,8 +50,34 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
 - Gate G1 ("Java endpoint returns a valid loaded fixture and website draws it") is **not yet
   met** — fixture is validated but not yet exposed over HTTP. That's P0-04.
 
+## P0-04 — Fixture loader + timeline — DONE
+- `FixtureRepository` (`@Component`): loads `examples/demo-001-mini-fixture.json` once at
+  startup, running schema + integrity validation first (fail-fast: a broken bundled fixture
+  never serves). Parses into typed `Fixture` domain records (`com.beyond90.api.fixture.Fixture`).
+- `MatchController`: `GET /api/v1/matches/{matchId}` (MatchSummary) and
+  `/api/v1/matches/{matchId}/timeline` (Timeline) per `contracts/openapi.yaml`; events are
+  always re-sorted by canonical `seq` (not file authoring order) before serialization.
+  Unknown `matchId` -> `MatchNotFoundException` -> `ApiExceptionHandler` -> RFC 7807
+  `application/problem+json` 404, matching the `Problem` schema.
+- Score projection: contract has no score field (`MatchSummary`/`Timeline` don't define one) —
+  did not invent one; "same time -> same state" AC is met by the timeline being a pure,
+  deterministic function of the immutable fixture (verified by a repeated-call equality test),
+  with score left as a client-side derivation from `GOAL` events per architecture ("rendering
+  is a pure projection of canonical data").
+- Bug caught and fixed before commit: `examples/` was wired only as a **test** resource, so
+  `spring-boot:run` crashed at startup (`BeanCreationException` on `FixtureRepository`,
+  `IllegalStateException: Missing classpath resource`). Fixed by moving it into
+  `<build><resources>` in `pom.xml` (the demo fixture ships with the running app, not just
+  tests).
+- Verified: `(cd backend && ./mvnw test)` -> BUILD SUCCESS, 15/15 tests. Live smoke test via
+  `./mvnw spring-boot:run` + `curl`: `/matches/demo-001` returns the full fixture (22 players,
+  homeTeam=blue/awayTeam=red); `/timeline` returns 4 events ordered seq 1-4 and moment `m01`;
+  unknown matchId returns `404` with `{"status":404,"title":"Resource absent",...}`.
+- **Gate G1 Java-side requirement met**: a real endpoint returns a valid loaded fixture.
+  Website-draws-it half is still open — current frontend page is a static SVG placeholder
+  (P0-01), not wired to the API yet. That's P0-05/P0-06.
+
 ## Next task
-P0-04 — Fixture loader + timeline. Immutable in-memory repo exposing `GET /api/v1/matches/demo-001`
-and `/api/v1/matches/demo-001/timeline` per `contracts/openapi.yaml`; deterministic score
-projection and seek (same `matchClockMs` always yields the same event/score state). This closes
-Gate G1.
+P0-05 — 3D pitch + fallback (Day 2). 105x68 plane, 22 markers, ball, 2D SVG fallback; shared
+coordinate transform; camera presets; Play/Pause/Seek. Frontend still needs to fetch
+`/api/v1/matches/demo-001` and `/timeline` and render it — that's what actually closes Gate G1.
