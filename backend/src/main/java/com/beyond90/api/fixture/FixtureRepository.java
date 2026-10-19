@@ -37,6 +37,13 @@ public class FixtureRepository {
 		return Optional.ofNullable(fixturesByMatchId.get(matchId));
 	}
 
+	/** The {@code /moments/{momentId}/xray} contract path has no matchId; resolve by momentId instead. */
+	public Optional<Fixture> findFixtureContainingMoment(String momentId) {
+		return fixturesByMatchId.values().stream()
+				.filter(f -> f.moments().stream().anyMatch(m -> m.momentId().equals(momentId)))
+				.findFirst();
+	}
+
 	/** Events ordered by canonical {@code seq}, independent of authoring order in the source file. */
 	public List<Fixture.MatchEvent> orderedEvents(Fixture fixture) {
 		return fixture.events().stream()

@@ -156,8 +156,38 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
   shortened window — all four doc-specified negative cases covered plus two extra boundary cases.
 - Verified: `(cd backend && ./mvnw test)` -> BUILD SUCCESS, 29/29 tests (23 prior + 6 new).
 
+## P0-09 — X-Ray DTO endpoint — DONE
+- `GET /api/v1/moments/{momentId}/xray` (`XRayController` -> `XRayService`), implementing
+  `contracts/openapi.yaml`'s `XRayResponse`/`InsightMetric`/`GeometryOverlay`/`Point` schemas.
+  `FixtureRepository.findFixtureContainingMoment` added (the contract path has no matchId).
+  `MomentNotFoundException` -> 404 `application/problem+json` via `ApiExceptionHandler`
+  (factored the existing match-404 logic into a shared `notFound(...)` helper, same response
+  shape, no behavior change to the existing `/matches/{matchId}` 404).
+- **Only Detector D2 (pressure) is wired, not D1 (lane clearance)**: M01 has no `PASS` event with
+  a recorded passer/receiver pair — it's a pressure/interception moment, not a passing-lane one.
+  Wiring D1 against M01 would mean inventing an evidence basis the fixture doesn't have (AGENTS.md
+  anti-slop: "do not invent measurements"). D1 wiring is deferred to P0-11's M02/M03 fixtures,
+  which are explicitly scoped to author a moment where a real pass+defenders exist.
+  `LaneClearanceCalculator` itself (P0-07) is unchanged and ready to be called once that data exists.
+- Confidence derivation (doc §B: "derive deterministically from missingness, coverage and evidence
+  checks, not model self-reported probability"), concretely for this detector: `SUPPORTED` when
+  `PressureDetector` fires with full evidence (M01's case), `PARTIAL` when a turnover exists but the
+  detector's own thresholds aren't met, `INSUFFICIENT` when the moment has no turnover event at all.
+- For M01: `confidence=SUPPORTED`, one `InsightMetric` (`PRESSURE_ASSOCIATED_TURNOVER`, value=2,
+  unit=count, 4 evidenceIds, algorithmVersion=`D2.v1`), one `LINE` geometry overlay connecting the
+  two real `PRESSURE` event locations, top-level `evidenceIds` = the union of all metric evidence
+  (all 4 IDs resolve to real M01 events — asserted directly in `XRayServiceTest`), one caveat
+  carrying the detector's explicit non-causal disclaimer.
+- Tests: `XRayServiceTest` (4, incl. the AC's own "all referenced IDs resolve" check against the
+  real fixture's event IDs) + `XRayControllerTest` (2, MockMvc, 200 shape + 404 problem).
+- Verified: `(cd backend && ./mvnw test)` -> BUILD SUCCESS, 35/35 tests (29 prior + 6 new). Live
+  smoke: `./mvnw spring-boot:run` + `curl localhost:8080/api/v1/moments/m01/xray` returned the
+  exact expected JSON (confidence SUPPORTED, 4 evidenceIds, D2.v1); `/moments/nope/xray` -> 404.
+- **Gate G3 ("ONE truthful insight") MET** — a real, evidence-backed, non-causal insight is served
+  over a real HTTP endpoint for a real fixture moment.
+
 ## Next task
-P0-09 — X-Ray DTO endpoint (Day 3). `GET /moments/m01/xray`: REST data with geometry IDs, linked
-features and missingness, wiring D1 (lane clearance) and D2 (pressure) into the contract's
-`XRayResponse`/`InsightMetric`/`GeometryOverlay` schemas. AC: response valid, all referenced IDs
-resolve. Completes Gate G3 ("ONE truthful insight").
+P0-10 — 3D tactical overlay (Day 4). Wire the X-Ray response's `geometry` (LINE overlay +
+evidenceIds) into the 3D/2D pitch viewer: camera X-Ray focus, pressure halo, accessible DOM text.
+AC: any highlighted geometry traceable to metric/snapshot ID. Starts Gate G4 ("why does the AI say
+that? within one click").
