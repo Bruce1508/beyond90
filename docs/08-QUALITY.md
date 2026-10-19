@@ -4,7 +4,10 @@
 Every pull request/push to main:
 1. Java: `./mvnw -B verify` (JUnit 5, AssertJ, MockMvc, Spring context and fixture golden tests). Maven Wrapper committed by implementation agent.
 2. Frontend: `corepack pnpm install --frozen-lockfile && pnpm lint && pnpm typecheck && pnpm test && pnpm build` (create scripts as part of bootstrapping).
-3. Contract lint: OpenAPI YAML syntactic/schema checker, AJV JSON Schema fixtures (validator versions pinned). Fail if contract drift.
+3. Contract lint:
+   - OpenAPI: `npx @redocly/cli@latest lint contracts/openapi.yaml --extends minimal` (structural validity; `minimal` ruleset skips cosmetic/style-only warnings).
+   - Fixture JSON Schema: `(cd backend && ./mvnw test -Dtest=FixtureSchemaValidatorTest)` (`com.networknt:json-schema-validator` 1.5.6, draft 2020-12, loads `contracts/match-event.schema.json` straight off the classpath — no duplicated copy, so contract drift fails the build instead of silently diverging).
+   Fail if contract drift.
 4. Dependency and secret scans (Dependabot/dependency-review, CodeQL if available, gitleaks locally or supported GitHub secrets scanning). Do not push unreviewed secrets.
 5. Container image build and smoke startup (P0 before deployment).
 
