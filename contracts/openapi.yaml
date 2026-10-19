@@ -1,0 +1,363 @@
+openapi: 3.1.0
+info:
+  title: BEYOND90 API
+  version: 1.0.0
+  description: Synthetic football X-Ray and bounded counterfactual REST API. All observations are synthetic; branch outputs are simulated, never calibrated real-world probabilities.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/v1/health:
+    get:
+      operationId: health
+      responses:
+        '200':
+          description: Public health summary (no secrets)
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [status]
+                properties:
+                  status: { type: string, enum: [UP, DEGRADED] }
+  /api/v1/matches:
+    get:
+      operationId: listMatches
+      responses:
+        '200':
+          description: Listed synthetic matches
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MatchSummary' }
+  /api/v1/matches/{matchId}:
+    get:
+      operationId: getMatch
+      parameters:
+        - $ref: '#/components/parameters/MatchId'
+      responses:
+        '200':
+          description: Match metadata
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MatchSummary' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/matches/{matchId}/timeline:
+    get:
+      operationId: getTimeline
+      parameters:
+        - $ref: '#/components/parameters/MatchId'
+      responses:
+        '200':
+          description: Canonically ordered fixture events and selectable moments
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Timeline' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/matches/{matchId}/snapshots:
+    get:
+      operationId: getTrackingSnapshots
+      description: Sparse curated snapshots, not full continuous real-match tracking
+      parameters:
+        - $ref: '#/components/parameters/MatchId'
+        - name: startMs
+          in: query
+          schema: { type: integer, minimum: 0 }
+        - name: endMs
+          in: query
+          schema: { type: integer, minimum: 0 }
+      responses:
+        '200':
+          description: Immutable tracking snapshots for selected match-time range
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [matchId, scenarioVersion, snapshots]
+                properties:
+                  matchId: { type: string }
+                  scenarioVersion: { type: string }
+                  snapshots: { type: array, items: { $ref: '#/components/schemas/TrackingSnapshot' } }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/moments/{momentId}/xray:
+    get:
+      operationId: getXRay
+      parameters:
+        - $ref: '#/components/parameters/MomentId'
+      responses:
+        '200':
+          description: Evidence-backed tactical view; may be insufficient for off-ball conclusions
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/XRayResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/moments/{momentId}/simulate:
+    post:
+      operationId: simulateMoment
+      parameters:
+        - $ref: '#/components/parameters/MomentId'
+        - name: Idempotency-Key
+          in: header
+          schema: { type: string, maxLength: 128 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SimulateRequest' }
+      responses:
+        '200':
+          description: Bounded synthetic alternative
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BranchResult' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/moments/{momentId}/explain:
+    post:
+      operationId: explainMoment
+      parameters:
+        - $ref: '#/components/parameters/MomentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ExplainRequest' }
+      responses:
+        '200':
+          description: Grounded explanation or transparent deterministic fallback
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Explanation' }
+        '404': { $ref: '#/components/responses/NotFound' }
+  /api/v1/matches/{matchId}/recap:
+    get:
+      operationId: getRecap
+      parameters:
+        - $ref: '#/components/parameters/MatchId'
+      responses:
+        '200':
+          description: Recap of cited synthetic key moments
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [matchId, momentIds, text, synthetic]
+                properties:
+                  matchId: { type: string }
+                  momentIds: { type: array, items: { type: string } }
+                  text: { type: string }
+                  synthetic: { type: boolean, const: true }
+        '404': { $ref: '#/components/responses/NotFound' }
+components:
+  parameters:
+    MatchId:
+      name: matchId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-z0-9-]+$' }
+    MomentId:
+      name: momentId
+      in: path
+      required: true
+      schema: { type: string, pattern: '^[a-z0-9-]+$' }
+  responses:
+    NotFound:
+      description: Resource absent
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unprocessable:
+      description: Invalid intervention or domain constraint
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+  schemas:
+    Point:
+      type: object
+      additionalProperties: false
+      required: [x, y]
+      properties:
+        x: { type: number, minimum: 0, maximum: 105 }
+        y: { type: number, minimum: 0, maximum: 68 }
+    MatchSummary:
+      type: object
+      required: [matchId, scenarioVersion, synthetic, pitch, homeTeam, awayTeam]
+      properties:
+        matchId: { type: string }
+        scenarioVersion: { type: string }
+        synthetic: { type: boolean, const: true }
+        pitch:
+          type: object
+          required: [lengthMeters, widthMeters]
+          properties:
+            lengthMeters: { type: number, const: 105 }
+            widthMeters: { type: number, const: 68 }
+        homeTeam: { type: string }
+        awayTeam: { type: string }
+        players:
+          type: array
+          items:
+            type: object
+            required: [playerId, teamId, displayName, shirtNumber]
+            properties:
+              playerId: { type: string }
+              teamId: { type: string }
+              displayName: { type: string }
+              shirtNumber: { type: integer }
+        periods:
+          type: array
+          items:
+            type: object
+            required: [period, startMs, attackDirectionByTeam]
+            properties:
+              period: { type: string }
+              startMs: { type: integer }
+              attackDirectionByTeam:
+                type: object
+                additionalProperties: { type: string, enum: [LEFT_TO_RIGHT, RIGHT_TO_LEFT] }
+    PlayerPose:
+      type: object
+      required: [playerId, x, y]
+      properties:
+        playerId: { type: string }
+        x: { type: number, minimum: 0, maximum: 105 }
+        y: { type: number, minimum: 0, maximum: 68 }
+    BallPosition:
+      type: object
+      additionalProperties: false
+      required: [x, y, z]
+      properties:
+        x: { type: number, minimum: 0, maximum: 105 }
+        y: { type: number, minimum: 0, maximum: 68 }
+        z: { type: number, minimum: 0 }
+    TrackingSnapshot:
+      type: object
+      required: [snapshotId, matchClockMs, ball, playerPoses]
+      properties:
+        snapshotId: { type: string }
+        matchClockMs: { type: integer, minimum: 0 }
+        ball: { $ref: '#/components/schemas/BallPosition' }
+        playerPoses: { type: array, items: { $ref: '#/components/schemas/PlayerPose' } }
+    Event:
+      type: object
+      required: [eventId, seq, period, matchClockMs, periodClockMs, type, teamId, actorId, location]
+      properties:
+        eventId: { type: string }
+        seq: { type: integer, minimum: 1 }
+        matchClockMs: { type: integer, minimum: 0 }
+        periodClockMs: { type: integer, minimum: 0 }
+        period: { type: string, enum: [FIRST_HALF, SECOND_HALF, EXTRA_FIRST, EXTRA_SECOND, PENALTIES] }
+        type: { type: string, enum: [PASS, CARRY, SHOT, TACKLE, INTERCEPTION, POSSESSION_CHANGE, PRESSURE, GOAL, FOUL, PERIOD_START, PERIOD_END] }
+        teamId: { type: string }
+        actorId: { type: string }
+        location: { $ref: '#/components/schemas/Point' }
+        endLocation: { $ref: '#/components/schemas/Point' }
+        snapshotId: { type: string }
+    Moment:
+      type: object
+      required: [momentId, startMs, endMs, availableActions]
+      properties:
+        momentId: { type: string }
+        startMs: { type: integer, minimum: 0 }
+        endMs: { type: integer, minimum: 0 }
+        availableActions:
+          type: array
+          items: { type: string, enum: [PASS, SHOOT, CARRY] }
+    Timeline:
+      type: object
+      required: [matchId, scenarioVersion, events, moments]
+      properties:
+        matchId: { type: string }
+        scenarioVersion: { type: string }
+        events: { type: array, items: { $ref: '#/components/schemas/Event' } }
+        moments: { type: array, items: { $ref: '#/components/schemas/Moment' } }
+    InsightMetric:
+      type: object
+      required: [metricId, value, unit, evidenceIds, algorithmVersion]
+      properties:
+        metricId: { type: string }
+        value: { type: number }
+        unit: { type: string }
+        evidenceIds: { type: array, minItems: 1, items: { type: string } }
+        algorithmVersion: { type: string }
+    GeometryOverlay:
+      type: object
+      required: [type, points, evidenceIds]
+      properties:
+        type: { type: string, enum: [LINE, CIRCLE, POLYGON] }
+        points: { type: array, items: { $ref: '#/components/schemas/Point' } }
+        evidenceIds: { type: array, items: { type: string } }
+    XRayResponse:
+      type: object
+      required: [insightId, momentId, scenarioVersion, confidence, metrics, geometry, evidenceIds, caveats]
+      properties:
+        insightId: { type: string }
+        momentId: { type: string }
+        scenarioVersion: { type: string }
+        confidence: { type: string, enum: [SUPPORTED, PARTIAL, INSUFFICIENT] }
+        metrics: { type: array, items: { $ref: '#/components/schemas/InsightMetric' } }
+        geometry: { type: array, items: { $ref: '#/components/schemas/GeometryOverlay' } }
+        evidenceIds: { type: array, items: { type: string } }
+        caveats: { type: array, items: { type: string } }
+    SimulateRequest:
+      type: object
+      additionalProperties: false
+      required: [scenarioVersion, action, seed]
+      properties:
+        scenarioVersion: { type: string }
+        action: { type: string, enum: [PASS, SHOOT, CARRY] }
+        target: { $ref: '#/components/schemas/Point' }
+        seed: { type: integer }
+    BranchFrame:
+      type: object
+      required: [tMs, ball]
+      properties:
+        tMs: { type: integer, minimum: 0 }
+        ball: { $ref: '#/components/schemas/Point' }
+        ballHeightMeters: { type: number, minimum: 0 }
+        playerPoses: { type: array, items: { $ref: '#/components/schemas/PlayerPose' } }
+    BranchResult:
+      type: object
+      required: [branchId, momentId, baseSnapshotId, originalUnchanged, simulated, engineVersion, seed, frames, caveats]
+      properties:
+        branchId: { type: string }
+        momentId: { type: string }
+        baseSnapshotId: { type: string }
+        originalUnchanged: { type: boolean, const: true }
+        simulated: { type: boolean, const: true }
+        engineVersion: { type: string }
+        seed: { type: integer }
+        frames: { type: array, items: { $ref: '#/components/schemas/BranchFrame' } }
+        caveats: { type: array, minItems: 1, items: { type: string } }
+    ExplainRequest:
+      type: object
+      additionalProperties: false
+      required: [audience, locale]
+      properties:
+        audience: { type: string, enum: [FAN, ANALYST] }
+        locale: { type: string, enum: [en, vi] }
+    Explanation:
+      type: object
+      required: [insightId, headline, sentences, status, promptVersion]
+      properties:
+        insightId: { type: string }
+        headline: { type: string }
+        status: { type: string, enum: [MODEL_VERIFIED, TEMPLATE_FALLBACK] }
+        promptVersion: { type: string }
+        sentences:
+          type: array
+          items:
+            type: object
+            required: [text, evidenceIds]
+            properties:
+              text: { type: string }
+              evidenceIds: { type: array, minItems: 1, items: { type: string } }
+    Problem:
+      type: object
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri-reference }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        traceId: { type: string }

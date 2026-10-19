@@ -1,0 +1,422 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/beyond90/contracts/match-event.schema.json",
+  "title": "BEYOND90 Synthetic Match Fixture v1",
+  "description": "Structural schema only. Cross-event identity, order, scorer/score and movement plausibility are enforced by Java FixtureValidator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "scenarioVersion",
+    "matchId",
+    "generatorSeed",
+    "synthetic",
+    "pitch",
+    "teams",
+    "periods",
+    "players",
+    "events",
+    "snapshots",
+    "moments"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "scenarioVersion": {
+      "type": "string",
+      "minLength": 1
+    },
+    "matchId": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]+$"
+    },
+    "generatorSeed": {
+      "type": "integer"
+    },
+    "synthetic": {
+      "const": true
+    },
+    "pitch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lengthMeters",
+        "widthMeters"
+      ],
+      "properties": {
+        "lengthMeters": {
+          "const": 105
+        },
+        "widthMeters": {
+          "const": 68
+        }
+      }
+    },
+    "teams": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": {
+        "$ref": "#/$defs/team"
+      }
+    },
+    "players": {
+      "type": "array",
+      "minItems": 22,
+      "items": {
+        "$ref": "#/$defs/player"
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/event"
+      }
+    },
+    "snapshots": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/snapshot"
+      }
+    },
+    "moments": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/moment"
+      }
+    },
+    "periods": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "period",
+          "startMs",
+          "attackDirectionByTeam"
+        ],
+        "properties": {
+          "period": {
+            "enum": [
+              "FIRST_HALF",
+              "SECOND_HALF",
+              "EXTRA_FIRST",
+              "EXTRA_SECOND",
+              "PENALTIES"
+            ]
+          },
+          "startMs": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "attackDirectionByTeam": {
+            "type": "object",
+            "minProperties": 2,
+            "additionalProperties": {
+              "enum": [
+                "LEFT_TO_RIGHT",
+                "RIGHT_TO_LEFT"
+              ]
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "team": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "teamId",
+        "name",
+        "firstHalfAttackDirection"
+      ],
+      "properties": {
+        "teamId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "firstHalfAttackDirection": {
+          "enum": [
+            "LEFT_TO_RIGHT",
+            "RIGHT_TO_LEFT"
+          ]
+        }
+      }
+    },
+    "player": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "playerId",
+        "teamId",
+        "shirtNumber",
+        "displayName"
+      ],
+      "properties": {
+        "playerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "teamId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "shirtNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 99
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y"
+      ],
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 105
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 68
+        }
+      }
+    },
+    "ball": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "properties": {
+        "x": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 105
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 68
+        },
+        "z": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "playerPose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "playerId",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "playerId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "x": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 105
+        },
+        "y": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 68
+        }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventId",
+        "seq",
+        "period",
+        "matchClockMs",
+        "periodClockMs",
+        "type",
+        "teamId",
+        "actorId",
+        "location",
+        "provenance"
+      ],
+      "properties": {
+        "eventId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "period": {
+          "enum": [
+            "FIRST_HALF",
+            "SECOND_HALF",
+            "EXTRA_FIRST",
+            "EXTRA_SECOND",
+            "PENALTIES"
+          ]
+        },
+        "matchClockMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "type": {
+          "enum": [
+            "PASS",
+            "CARRY",
+            "SHOT",
+            "TACKLE",
+            "INTERCEPTION",
+            "POSSESSION_CHANGE",
+            "PRESSURE",
+            "GOAL",
+            "FOUL",
+            "PERIOD_START",
+            "PERIOD_END"
+          ]
+        },
+        "teamId": {
+          "type": "string"
+        },
+        "actorId": {
+          "type": "string"
+        },
+        "targetActorId": {
+          "type": "string"
+        },
+        "location": {
+          "$ref": "#/$defs/point"
+        },
+        "endLocation": {
+          "$ref": "#/$defs/point"
+        },
+        "outcome": {
+          "type": "string"
+        },
+        "snapshotId": {
+          "type": "string"
+        },
+        "provenance": {
+          "const": "SYNTHETIC"
+        },
+        "periodClockMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "snapshotId",
+        "matchClockMs",
+        "ball",
+        "playerPoses"
+      ],
+      "properties": {
+        "snapshotId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "matchClockMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "ball": {
+          "$ref": "#/$defs/ball"
+        },
+        "playerPoses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/playerPose"
+          }
+        }
+      }
+    },
+    "moment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "momentId",
+        "startMs",
+        "endMs",
+        "eventIds",
+        "snapshotIds",
+        "availableActions"
+      ],
+      "properties": {
+        "momentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "startMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "endMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "eventIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "snapshotIds": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string"
+          }
+        },
+        "availableActions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "PASS",
+              "SHOOT",
+              "CARRY"
+            ]
+          }
+        },
+        "actorId": {
+          "type": "string"
+        },
+        "baseSnapshotId": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,503 @@
+{
+  "schemaVersion": "1.0.0",
+  "scenarioVersion": "1.0.0",
+  "matchId": "demo-001",
+  "generatorSeed": 9001,
+  "synthetic": true,
+  "pitch": {
+    "lengthMeters": 105,
+    "widthMeters": 68
+  },
+  "teams": [
+    {
+      "teamId": "blue",
+      "name": "Blue FC",
+      "firstHalfAttackDirection": "LEFT_TO_RIGHT"
+    },
+    {
+      "teamId": "red",
+      "name": "Red United",
+      "firstHalfAttackDirection": "RIGHT_TO_LEFT"
+    }
+  ],
+  "players": [
+    {
+      "playerId": "blue_01",
+      "teamId": "blue",
+      "shirtNumber": 1,
+      "displayName": "Blue 01"
+    },
+    {
+      "playerId": "blue_02",
+      "teamId": "blue",
+      "shirtNumber": 2,
+      "displayName": "Blue 02"
+    },
+    {
+      "playerId": "blue_03",
+      "teamId": "blue",
+      "shirtNumber": 3,
+      "displayName": "Blue 03"
+    },
+    {
+      "playerId": "blue_04",
+      "teamId": "blue",
+      "shirtNumber": 4,
+      "displayName": "Blue 04"
+    },
+    {
+      "playerId": "blue_05",
+      "teamId": "blue",
+      "shirtNumber": 5,
+      "displayName": "Blue 05"
+    },
+    {
+      "playerId": "blue_06",
+      "teamId": "blue",
+      "shirtNumber": 6,
+      "displayName": "Blue 06"
+    },
+    {
+      "playerId": "blue_07",
+      "teamId": "blue",
+      "shirtNumber": 7,
+      "displayName": "Blue 07"
+    },
+    {
+      "playerId": "blue_08",
+      "teamId": "blue",
+      "shirtNumber": 8,
+      "displayName": "Blue 08"
+    },
+    {
+      "playerId": "blue_09",
+      "teamId": "blue",
+      "shirtNumber": 9,
+      "displayName": "Blue 09"
+    },
+    {
+      "playerId": "blue_10",
+      "teamId": "blue",
+      "shirtNumber": 10,
+      "displayName": "Blue 10"
+    },
+    {
+      "playerId": "blue_11",
+      "teamId": "blue",
+      "shirtNumber": 11,
+      "displayName": "Blue 11"
+    },
+    {
+      "playerId": "red_01",
+      "teamId": "red",
+      "shirtNumber": 1,
+      "displayName": "Red 01"
+    },
+    {
+      "playerId": "red_02",
+      "teamId": "red",
+      "shirtNumber": 2,
+      "displayName": "Red 02"
+    },
+    {
+      "playerId": "red_03",
+      "teamId": "red",
+      "shirtNumber": 3,
+      "displayName": "Red 03"
+    },
+    {
+      "playerId": "red_04",
+      "teamId": "red",
+      "shirtNumber": 4,
+      "displayName": "Red 04"
+    },
+    {
+      "playerId": "red_05",
+      "teamId": "red",
+      "shirtNumber": 5,
+      "displayName": "Red 05"
+    },
+    {
+      "playerId": "red_06",
+      "teamId": "red",
+      "shirtNumber": 6,
+      "displayName": "Red 06"
+    },
+    {
+      "playerId": "red_07",
+      "teamId": "red",
+      "shirtNumber": 7,
+      "displayName": "Red 07"
+    },
+    {
+      "playerId": "red_08",
+      "teamId": "red",
+      "shirtNumber": 8,
+      "displayName": "Red 08"
+    },
+    {
+      "playerId": "red_09",
+      "teamId": "red",
+      "shirtNumber": 9,
+      "displayName": "Red 09"
+    },
+    {
+      "playerId": "red_10",
+      "teamId": "red",
+      "shirtNumber": 10,
+      "displayName": "Red 10"
+    },
+    {
+      "playerId": "red_11",
+      "teamId": "red",
+      "shirtNumber": 11,
+      "displayName": "Red 11"
+    }
+  ],
+  "events": [
+    {
+      "eventId": "evt_press_1",
+      "seq": 1,
+      "period": "FIRST_HALF",
+      "matchClockMs": 1310000,
+      "type": "PRESSURE",
+      "teamId": "red",
+      "actorId": "red_06",
+      "location": {
+        "x": 63,
+        "y": 30
+      },
+      "snapshotId": "snap_m01_a",
+      "provenance": "SYNTHETIC",
+      "periodClockMs": 1310000
+    },
+    {
+      "eventId": "evt_press_2",
+      "seq": 2,
+      "period": "FIRST_HALF",
+      "matchClockMs": 1312000,
+      "type": "PRESSURE",
+      "teamId": "red",
+      "actorId": "red_08",
+      "location": {
+        "x": 61,
+        "y": 35
+      },
+      "snapshotId": "snap_m01_a",
+      "provenance": "SYNTHETIC",
+      "periodClockMs": 1312000
+    },
+    {
+      "eventId": "evt_interception_1",
+      "seq": 3,
+      "period": "FIRST_HALF",
+      "matchClockMs": 1316000,
+      "type": "INTERCEPTION",
+      "teamId": "red",
+      "actorId": "red_06",
+      "location": {
+        "x": 62,
+        "y": 33
+      },
+      "snapshotId": "snap_m01_b",
+      "provenance": "SYNTHETIC",
+      "periodClockMs": 1316000
+    },
+    {
+      "eventId": "evt_poss_1",
+      "seq": 4,
+      "period": "FIRST_HALF",
+      "matchClockMs": 1316200,
+      "type": "POSSESSION_CHANGE",
+      "teamId": "red",
+      "actorId": "red_06",
+      "location": {
+        "x": 62,
+        "y": 33
+      },
+      "snapshotId": "snap_m01_b",
+      "provenance": "SYNTHETIC",
+      "periodClockMs": 1316200
+    }
+  ],
+  "snapshots": [
+    {
+      "snapshotId": "snap_m01_a",
+      "matchClockMs": 1310000,
+      "ball": {
+        "x": 65,
+        "y": 33,
+        "z": 0.12
+      },
+      "playerPoses": [
+        {
+          "playerId": "blue_01",
+          "x": 27,
+          "y": 10
+        },
+        {
+          "playerId": "blue_02",
+          "x": 39,
+          "y": 13
+        },
+        {
+          "playerId": "blue_03",
+          "x": 51,
+          "y": 16
+        },
+        {
+          "playerId": "blue_04",
+          "x": 15,
+          "y": 25
+        },
+        {
+          "playerId": "blue_05",
+          "x": 27,
+          "y": 28
+        },
+        {
+          "playerId": "blue_06",
+          "x": 39,
+          "y": 31
+        },
+        {
+          "playerId": "blue_07",
+          "x": 51,
+          "y": 34
+        },
+        {
+          "playerId": "blue_08",
+          "x": 15,
+          "y": 43
+        },
+        {
+          "playerId": "blue_09",
+          "x": 27,
+          "y": 46
+        },
+        {
+          "playerId": "blue_10",
+          "x": 39,
+          "y": 49
+        },
+        {
+          "playerId": "blue_11",
+          "x": 51,
+          "y": 52
+        },
+        {
+          "playerId": "red_01",
+          "x": 78,
+          "y": 10
+        },
+        {
+          "playerId": "red_02",
+          "x": 66,
+          "y": 13
+        },
+        {
+          "playerId": "red_03",
+          "x": 54,
+          "y": 16
+        },
+        {
+          "playerId": "red_04",
+          "x": 90,
+          "y": 25
+        },
+        {
+          "playerId": "red_05",
+          "x": 78,
+          "y": 28
+        },
+        {
+          "playerId": "red_06",
+          "x": 66,
+          "y": 31
+        },
+        {
+          "playerId": "red_07",
+          "x": 54,
+          "y": 34
+        },
+        {
+          "playerId": "red_08",
+          "x": 90,
+          "y": 43
+        },
+        {
+          "playerId": "red_09",
+          "x": 78,
+          "y": 46
+        },
+        {
+          "playerId": "red_10",
+          "x": 66,
+          "y": 49
+        },
+        {
+          "playerId": "red_11",
+          "x": 54,
+          "y": 52
+        }
+      ]
+    },
+    {
+      "snapshotId": "snap_m01_b",
+      "matchClockMs": 1316000,
+      "ball": {
+        "x": 62,
+        "y": 33,
+        "z": 0.12
+      },
+      "playerPoses": [
+        {
+          "playerId": "blue_01",
+          "x": 27,
+          "y": 10
+        },
+        {
+          "playerId": "blue_02",
+          "x": 39,
+          "y": 13
+        },
+        {
+          "playerId": "blue_03",
+          "x": 51,
+          "y": 16
+        },
+        {
+          "playerId": "blue_04",
+          "x": 15,
+          "y": 25
+        },
+        {
+          "playerId": "blue_05",
+          "x": 27,
+          "y": 28
+        },
+        {
+          "playerId": "blue_06",
+          "x": 39,
+          "y": 31
+        },
+        {
+          "playerId": "blue_07",
+          "x": 51,
+          "y": 34
+        },
+        {
+          "playerId": "blue_08",
+          "x": 15,
+          "y": 43
+        },
+        {
+          "playerId": "blue_09",
+          "x": 27,
+          "y": 46
+        },
+        {
+          "playerId": "blue_10",
+          "x": 39,
+          "y": 49
+        },
+        {
+          "playerId": "blue_11",
+          "x": 51,
+          "y": 52
+        },
+        {
+          "playerId": "red_01",
+          "x": 78,
+          "y": 10
+        },
+        {
+          "playerId": "red_02",
+          "x": 66,
+          "y": 13
+        },
+        {
+          "playerId": "red_03",
+          "x": 54,
+          "y": 16
+        },
+        {
+          "playerId": "red_04",
+          "x": 90,
+          "y": 25
+        },
+        {
+          "playerId": "red_05",
+          "x": 78,
+          "y": 28
+        },
+        {
+          "playerId": "red_06",
+          "x": 66,
+          "y": 31
+        },
+        {
+          "playerId": "red_07",
+          "x": 54,
+          "y": 34
+        },
+        {
+          "playerId": "red_08",
+          "x": 90,
+          "y": 43
+        },
+        {
+          "playerId": "red_09",
+          "x": 78,
+          "y": 46
+        },
+        {
+          "playerId": "red_10",
+          "x": 66,
+          "y": 49
+        },
+        {
+          "playerId": "red_11",
+          "x": 54,
+          "y": 52
+        }
+      ]
+    }
+  ],
+  "moments": [
+    {
+      "momentId": "m01",
+      "startMs": 1310000,
+      "endMs": 1316200,
+      "eventIds": [
+        "evt_press_1",
+        "evt_press_2",
+        "evt_interception_1",
+        "evt_poss_1"
+      ],
+      "snapshotIds": [
+        "snap_m01_a",
+        "snap_m01_b"
+      ],
+      "availableActions": []
+    }
+  ],
+  "periods": [
+    {
+      "period": "FIRST_HALF",
+      "startMs": 0,
+      "attackDirectionByTeam": {
+        "blue": "LEFT_TO_RIGHT",
+        "red": "RIGHT_TO_LEFT"
+      }
+    },
+    {
+      "period": "SECOND_HALF",
+      "startMs": 2800000,
+      "attackDirectionByTeam": {
+        "blue": "RIGHT_TO_LEFT",
+        "red": "LEFT_TO_RIGHT"
+      }
+    }
+  ]
+}
