@@ -12,8 +12,8 @@ Timebox: **Oct 19 through Oct 27, 2026** (deadline 23:59 Pacific, Oct 28 02:59 T
 ## Day 1 — Oct 19: Environment / contracts / vertical slice
 - [x] **P0-01 Repo bootstrap (2h)**. Init monorepo, Maven wrapper Java 21 Spring Boot 4.1.x; Next.js TS R3F compatible versions; pnpm lockfile; no secrets; health API and a basic pitch page. **AC:** `./mvnw test`, `pnpm build` green; README start commands work on clean clone.
 - [x] **P0-02 Contract baseline (1.5h)**. Validate `contracts/openapi.yaml` + `contracts/match-event.schema.json`; finalize fixture IDs and canonical axes/clock. **AC:** invalid event out-of-bounds rejected, one contract validator command documented.
-- [ ] **P0-03 One synthetic key moment (2h)**. Author M01 with roster, timed events, snapshots. **AC:** 22 player IDs, score-consistent, schema-valid, replay fixture digest persisted in test.
-**Gate G1:** Java endpoint returns a valid loaded fixture and website draws it. If not, STOP styling.
+- [x] **P0-03 One synthetic key moment (2h)**. Author M01 with roster, timed events, snapshots. **AC:** 22 player IDs, score-consistent, schema-valid, replay fixture digest persisted in test.
+**Gate G1:** Java endpoint returns a valid loaded fixture and website draws it. If not, STOP styling. — **NOT YET MET**: fixture is validated but not yet served by an HTTP endpoint (P0-04).
 
 ## Day 2 — Oct 20: Replay, 3D pilot, dependable clock
 - [ ] **P0-04 Fixture loader + timeline (2h)**. Immutable repo, score projection and seek; `GET /matches/demo-001` and `/timeline`; tests for deterministic ordering and seek. **AC:** same time always yields same event/score state.

@@ -33,8 +33,25 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
 - Not yet done: cross-event referential-integrity validator (score/order/ID resolution) —
   deferred to P0-04 fixture loader per schema's own doc comment ("Java FixtureValidator").
 
+## P0-03 — One synthetic key moment — DONE
+- `examples/demo-001-mini-fixture.json` already authored M01 (pressure -> interception ->
+  possession change, 22 players, 2 snapshots) prior to this session; added the verification
+  layer the AC requires.
+- Added `FixtureIntegrityValidator` (duplicate-ID, team-cardinality, dangling-reference checks
+  that JSON Schema can't express) and `DemoFixtureM01Test`:
+  - schema-valid (reuses `FixtureSchemaValidator`, 0 errors)
+  - 22 unique player IDs across exactly 2 teams
+  - referentially consistent (all event/moment ID references resolve) and score-consistent
+    (0 GOAL events in M01 -> implied 0-0, trivially consistent; a GOAL-bearing moment is
+    exercised when M02/M03 land in P0-11)
+  - stable SHA-256 digest of the fixture bytes pinned as a regression test
+    (`4f6b1fe1...b1aad`, computed via `python3 -c "import hashlib; ..."` / `shasum -a 256`)
+- Verified: `(cd backend && ./mvnw test)` -> BUILD SUCCESS, 8/8 tests.
+- Gate G1 ("Java endpoint returns a valid loaded fixture and website draws it") is **not yet
+  met** — fixture is validated but not yet exposed over HTTP. That's P0-04.
+
 ## Next task
-P0-03 — One synthetic key moment. `examples/demo-001-mini-fixture.json` already contains a
-candidate M01 (pressure -> interception -> possession change, 22 players, 2 snapshots) — next
-step is a backend test that loads it, asserts the AC (22 player IDs, score-consistent,
-schema-valid, replay fixture digest persisted in test), and wires it behind a loader.
+P0-04 — Fixture loader + timeline. Immutable in-memory repo exposing `GET /api/v1/matches/demo-001`
+and `/api/v1/matches/demo-001/timeline` per `contracts/openapi.yaml`; deterministic score
+projection and seek (same `matchClockMs` always yields the same event/score state). This closes
+Gate G1.
