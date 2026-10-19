@@ -86,3 +86,20 @@ export interface XRayResponse {
 export function getXRay(momentId: string): Promise<XRayResponse> {
   return getJson(`/api/v1/moments/${momentId}/xray`);
 }
+
+export interface TimelineMoment {
+  momentId: string;
+  startMs: number;
+  endMs: number;
+  availableActions: string[];
+}
+
+export interface TimelineResponse {
+  matchId: string;
+  scenarioVersion: string;
+  moments: TimelineMoment[];
+}
+
+export function getTimeline(matchId: string): Promise<TimelineResponse> {
+  return getJson(`/api/v1/matches/${matchId}/timeline`);
+}

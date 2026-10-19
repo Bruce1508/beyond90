@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { getMatch, getSnapshots, getXRay, type MatchSummary, type SnapshotsResponse, type XRayResponse } from "@/lib/api";
+import {
+  getMatch,
+  getSnapshots,
+  getTimeline,
+  getXRay,
+  type MatchSummary,
+  type SnapshotsResponse,
+  type TimelineMoment,
+  type XRayResponse,
+} from "@/lib/api";
 import { PitchViewer } from "@/components/PitchViewer";
 import { PlaybackControls } from "@/components/PlaybackControls";
 import { XRayPanel } from "@/components/XRayPanel";
@@ -28,6 +37,7 @@ export default function Home() {
   const [currentMs, setCurrentMs] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [xray, setXray] = useState<XRayResponse | null>(null);
+  const [xrayMoment, setXrayMoment] = useState<TimelineMoment | null>(null);
   const [xrayError, setXrayError] = useState<string | null>(null);
   const rafRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number | null>(null);
@@ -117,10 +127,14 @@ export default function Home() {
         onClick={() => {
           if (xray) {
             setXray(null);
+            setXrayMoment(null);
             return;
           }
-          getXRay(XRAY_MOMENT_ID)
-            .then(setXray)
+          Promise.all([getXRay(XRAY_MOMENT_ID), getTimeline(MATCH_ID)])
+            .then(([xrayResult, timelineResult]) => {
+              setXray(xrayResult);
+              setXrayMoment(timelineResult.moments.find((m) => m.momentId === XRAY_MOMENT_ID) ?? null);
+            })
             .catch((err: Error) => setXrayError(err.message));
         }}
         className="rounded bg-amber-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
@@ -129,7 +143,7 @@ export default function Home() {
         {xray ? `Hide X-Ray (${XRAY_MOMENT_ID})` : `Show X-Ray evidence (${XRAY_MOMENT_ID})`}
       </button>
       {xrayError && <p className="text-sm text-red-400">Could not load X-Ray evidence: {xrayError}</p>}
-      {xray && <XRayPanel xray={xray} />}
+      {xray && <XRayPanel xray={xray} moment={xrayMoment} />}
     </main>
   );
 }

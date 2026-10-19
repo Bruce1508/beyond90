@@ -245,7 +245,30 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
   pinned constant before trusting the result, then re-ran with `./mvnw clean test` to confirm.
 - Verified: `(cd backend && ./mvnw clean test)` -> BUILD SUCCESS, 40/40 tests (35 prior + 5 new).
 
+## P0-12 — Evidence inspector — DONE
+- `frontend/src/lib/api.ts`: `getTimeline(matchId)` + `TimelineMoment`/`TimelineResponse` types,
+  reusing the already-existing P0-04 `/matches/{matchId}/timeline` endpoint for the moment's real
+  `startMs`/`endMs` rather than inventing a new field on the P0-09 X-Ray contract.
+- `XRayPanel.tsx` rewritten: each metric is now a real `<button>` (native Enter/Space activation,
+  `aria-expanded`/`aria-controls`) that toggles an expanded detail block showing **Definition**
+  (a small `METRIC_DEFINITIONS` glossary keyed by metricId, with a visible "no definition
+  recorded" fallback for an unknown future metricId rather than silently omitting it), **Time**
+  (the moment's real `startMs`-`endMs` window formatted as `mm:ss`), **ID** (metricId + algorithm
+  version + evidenceIds), and **Caveat** (matched to the metric by array position — the contract
+  ties caveats to metrics only positionally today, both lists have length 1 in practice).
+- `page.tsx`: the existing X-Ray toggle now fetches `getXRay` + `getTimeline` together and passes
+  the matching moment down; closing X-Ray clears both.
+- Verified: `(cd frontend && pnpm lint && pnpm build)` -> both green. **Verified live** via
+  Playwright, keyboard-only (not a mouse click, to actually prove the AC): clicked "Show X-Ray"
+  once, then `Tab` to the metric button + `Enter` — expanded correctly
+  (`[expanded]` state), showing the real definition text, `Time: 21:50-21:56` (matches M01's
+  actual `startMs`/`endMs` 1310000-1316200ms exactly), the real evidenceIds, and the non-causal
+  caveat. 0 console errors.
+- **Gate G4 ("why does the AI say that? within one click") MET** — one click (or one Tab+Enter)
+  reveals the full evidenced explanation, keyboard-only, independent of WebGL/3D.
+
 ## Next task
-P0-12 — Evidence inspector (Day 4). Click an insight -> metric definition/time/ID + caveat, full
-keyboard support and a non-JS/no-WebGL fallback. Completes Gate G4 ("why does the AI say that?
-within one click").
+P0-13 — Pure simulator (Day 5). PASS/SHOOT bounded Multiverse kinematics, deterministic seed,
+<=8s trajectory, no global mutable state. AC: golden runs byte-equivalent (except transient IDs),
+original fixture digest unchanged. Starts Gate G5 ("what if pass vs shoot? interactive,
+calculated, truthful").
