@@ -267,8 +267,46 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
 - **Gate G4 ("why does the AI say that? within one click") MET** — one click (or one Tab+Enter)
   reveals the full evidenced explanation, keyboard-only, independent of WebGL/3D.
 
+## P0-13 — Pure simulator — DONE
+- New package `com.beyond90.api.simulation`: `BranchSimulator` (pure, static, no Spring
+  dependency — same style as `PressureDetector`/`LaneClearanceCalculator`), `SimulationDtos`
+  (`SimulationAction`, `TrajectoryPointDto`, `SimulationResult`, `ActionType`/`Outcome` enums),
+  `InvalidActionException` (unmapped for now — HTTP 422 mapping is P0-14's job).
+- Pipeline per docs/04-FOOTBALL-ENGINES.md section C: `ActionValidator` (actor must be within
+  `POSSESSION_RADIUS_METERS=3.0` of the ball; PASS target must be a different, existing player;
+  destination must be inside the pitch; SHOOT target must sit on the attacking goal line within
+  `GOAL_LINE_TOLERANCE_METERS=0.5`) -> straight-line kinematics at `dt=100ms` (`PASS` 18 m/s,
+  `SHOOT` 26 m/s, capped at `MAX_DURATION_MS=8000`) -> defender collision check (perpendicular
+  distance from each defender to the straight ball path, clamped projection, same geometry as D1's
+  `LaneClearanceCalculator`, intentionally duplicated rather than cross-package-coupled) ->
+  outcome (`COMPLETED`/`INTERCEPTED` for PASS; `ON_TARGET`/`BLOCKED`/`MISS` for SHOOT, goal mouth
+  = `GOAL_WIDTH_METERS=7.32` centered on the pitch width).
+- `ponytail` simplifications, both flagged in code comments with an upgrade path: (1) defenders
+  are static during the trajectory (no `DefenseResponse` pursuit yet — add if/when evaluation
+  needs moving defenders); (2) a defender's interception point is approximated as their closest-
+  approach point on the path rather than solving exact circle-entry — good enough for the
+  geometric pass/fail check, not a physics claim.
+- `seed` is accepted and echoed back in the result but unused by the (currently fully
+  deterministic, randomness-free) geometry — wire in if/when Monte Carlo variants are added per
+  the doc's Reproducibility section.
+- 11 golden-vector tests in `BranchSimulatorTest`: determinism (same snapshot/seed/action ->
+  `assertThat(result1).isEqualTo(result2)`), PASS intercepted (defender exactly on the line) vs.
+  completed (defender far off-line), SHOOT on-target / outside-goal-rectangle MISS / blocked,
+  and 4 validator-rejection cases (actor not possessing ball, PASS targeting self, SHOOT target
+  off the goal line, destination outside the pitch) each asserting `InvalidActionException` +
+  a specific message fragment.
+- **Did not** touch `examples/demo-001-mini-fixture.json` or any existing file — original fixture
+  digest is unchanged by construction (`git status --short` shows only new files under
+  `backend/src/{main,test}/java/com/beyond90/api/simulation/`), satisfying the AC without needing
+  a redundant digest-recompute test (Java records are immutable; nothing in this task had write
+  access to the fixture).
+- Verified: `(cd backend && ./mvnw clean test)` -> BUILD SUCCESS, 51/51 tests (40 prior + 11 new).
+
 ## Next task
-P0-13 — Pure simulator (Day 5). PASS/SHOOT bounded Multiverse kinematics, deterministic seed,
-<=8s trajectory, no global mutable state. AC: golden runs byte-equivalent (except transient IDs),
-original fixture digest unchanged. Starts Gate G5 ("what if pass vs shoot? interactive,
-calculated, truthful").
+P0-14 — Branch API + tests (Day 5). `POST /simulate` wiring `BranchSimulator` into a real HTTP
+endpoint: map `InvalidActionException` -> 422 in `ApiExceptionHandler`, resolve a moment's
+`actorId`/`baseSnapshotId`/pitch/attack-direction/opposing-defenders from the `Fixture` the way
+`XRayService` already resolves a moment, add rate/size limits, and prove idempotency + parent-
+fixture immutability across 100 branch calls (per the doc's golden test list). Then P0-15 (branch
+UX: Original/Alternative toggle + trajectory preview), closing Gate G5 ("what if pass vs shoot?
+interactive, calculated, truthful").
