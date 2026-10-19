@@ -27,8 +27,9 @@ class DemoFixtureM01Test {
 
 	// SHA-256 of the fixture bytes at authoring time. Any byte change (including
 	// whitespace) must update this constant deliberately, not silently.
+	// Updated in P0-11 when snap_m02_a/b, snap_m03_a and moments m02/m03 were added.
 	private static final String EXPECTED_DIGEST =
-			"4f6b1fe17effbbc983a1762a04045c89759b025523a2990f29a75b0fe66b1aad";
+			"3958ef9ada1b0b5732fa5e4df74677ab65a826dc410aa4aa929ce9379b747e4e";
 
 	private final FixtureSchemaValidator schemaValidator = new FixtureSchemaValidator();
 	private final FixtureIntegrityValidator integrityValidator = new FixtureIntegrityValidator();

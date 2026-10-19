@@ -29,7 +29,7 @@ Timebox: **Oct 19 through Oct 27, 2026** (deadline 23:59 Pacific, Oct 28 02:59 T
 
 ## Day 4 — Oct 22: X-Ray UX + other moments
 - [x] **P0-10 3D tactical overlay (2.5h)**. camera X-Ray focus, lane lines, pressure halo; accessible DOM text. **AC:** any highlighted geometry traceable to metric/snapshot ID.
-- [ ] **P0-11 M02/M03 fixtures (2h)**. Author off-ball snapshot pair + decision fork scene; missingness tests and scenario labeling. **AC:** three demonstrable moments, 22-player scene where required.
+- [x] **P0-11 M02/M03 fixtures (2h)**. Author off-ball snapshot pair + decision fork scene; missingness tests and scenario labeling. **AC:** three demonstrable moments, 22-player scene where required.
 - [ ] **P0-12 Evidence inspector (1.5h)**. Click insight -> metric definition/time/ID + caveat; full keyboard support and fallback.
 **Gate G4:** a judge can answer 'why does the AI say that?' within one click.
 

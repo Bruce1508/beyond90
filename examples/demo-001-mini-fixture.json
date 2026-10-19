@@ -462,6 +462,91 @@
           "y": 52
         }
       ]
+    },
+    {
+      "snapshotId": "snap_m02_a",
+      "matchClockMs": 2400000,
+      "ball": {
+        "x": 20,
+        "y": 34,
+        "z": 0.1
+      },
+      "playerPoses": [
+        {
+          "playerId": "blue_01",
+          "x": 20,
+          "y": 34
+        },
+        {
+          "playerId": "blue_09",
+          "x": 40,
+          "y": 50
+        },
+        {
+          "playerId": "red_09",
+          "x": 41,
+          "y": 51
+        }
+      ]
+    },
+    {
+      "snapshotId": "snap_m02_b",
+      "matchClockMs": 2403000,
+      "ball": {
+        "x": 20,
+        "y": 34,
+        "z": 0.1
+      },
+      "playerPoses": [
+        {
+          "playerId": "blue_01",
+          "x": 20,
+          "y": 34
+        },
+        {
+          "playerId": "blue_09",
+          "x": 48,
+          "y": 50
+        },
+        {
+          "playerId": "red_09",
+          "x": 42,
+          "y": 51
+        }
+      ]
+    },
+    {
+      "snapshotId": "snap_m03_a",
+      "matchClockMs": 3000000,
+      "ball": {
+        "x": 20,
+        "y": 34,
+        "z": 0.1
+      },
+      "playerPoses": [
+        { "playerId": "blue_01", "x": 95, "y": 34 },
+        { "playerId": "blue_02", "x": 70, "y": 10 },
+        { "playerId": "blue_03", "x": 70, "y": 58 },
+        { "playerId": "blue_04", "x": 50, "y": 20 },
+        { "playerId": "blue_05", "x": 50, "y": 48 },
+        { "playerId": "blue_06", "x": 35, "y": 34 },
+        { "playerId": "blue_07", "x": 20, "y": 34 },
+        { "playerId": "blue_08", "x": 25, "y": 15 },
+        { "playerId": "blue_09", "x": 25, "y": 53 },
+        { "playerId": "blue_10", "x": 15, "y": 45 },
+        { "playerId": "blue_11", "x": 12, "y": 25 },
+        { "playerId": "red_01", "x": 3, "y": 34 },
+        { "playerId": "red_02", "x": 18, "y": 12 },
+        { "playerId": "red_03", "x": 18, "y": 56 },
+        { "playerId": "red_04", "x": 22, "y": 25 },
+        { "playerId": "red_05", "x": 22, "y": 43 },
+        { "playerId": "red_06", "x": 28, "y": 34 },
+        { "playerId": "red_07", "x": 40, "y": 20 },
+        { "playerId": "red_08", "x": 40, "y": 48 },
+        { "playerId": "red_09", "x": 55, "y": 34 },
+        { "playerId": "red_10", "x": 65, "y": 15 },
+        { "playerId": "red_11", "x": 65, "y": 53 }
+      ]
     }
   ],
   "moments": [
@@ -480,6 +565,33 @@
         "snap_m01_b"
       ],
       "availableActions": []
+    },
+    {
+      "momentId": "m02",
+      "startMs": 2400000,
+      "endMs": 2403000,
+      "eventIds": [],
+      "snapshotIds": [
+        "snap_m02_a",
+        "snap_m02_b"
+      ],
+      "availableActions": [],
+      "actorId": "blue_09"
+    },
+    {
+      "momentId": "m03",
+      "startMs": 3000000,
+      "endMs": 3000000,
+      "eventIds": [],
+      "snapshotIds": [
+        "snap_m03_a"
+      ],
+      "availableActions": [
+        "PASS",
+        "SHOOT"
+      ],
+      "actorId": "blue_07",
+      "baseSnapshotId": "snap_m03_a"
     }
   ],
   "periods": [

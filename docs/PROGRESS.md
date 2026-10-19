@@ -215,8 +215,37 @@ Terse, factual, append-only per task. See `AGENTS.md` §9 for the resume contrac
   — code is symmetric with the 3D path and shares the same `geometry` prop/data, but no
   WebGL-disabled browser context was exercised this session either.
 
+## P0-11 — M02/M03 fixtures — DONE
+- Extended `examples/demo-001-mini-fixture.json` (same single fixture, same 22-player roster --
+  no new fixture file) with two new moments, reusing M01's players/teams:
+  - **M02** (off-ball space creation, Detector D3): `snap_m02_a`/`snap_m02_b`, a focused 3-player
+    subset (ball-holder `blue_01`, runner `blue_09` separating from `9 -> 1` to `21` units,
+    marking defender `red_09` lagging behind). `eventIds: []` deliberately -- D3 has no logged
+    event type of its own, it's derived purely from the snapshot pair, so this is the fixture's
+    own "missingness" shape, not a gap.
+  - **M03** (Multiverse decision fork): `snap_m03_a`, the full 22-player roster repositioned into
+    a realistic SECOND_HALF attacking scene (blue now attacks right-to-left per the period's own
+    `attackDirectionByTeam`), ball at `blue_07`'s feet, `availableActions: [PASS, SHOOT]`,
+    `actorId: blue_07`, `baseSnapshotId: snap_m03_a`. `eventIds: []` too -- the decision is still
+    pending, nothing has "happened" yet at this freeze-frame.
+  - **Did not** add a PASS `MatchEvent` for M02/M03 (would need an actor/target pair + a real
+    pass attempt) -- D1 (lane clearance) still has no genuine evidence to wire into the X-Ray
+    endpoint; that stays deferred until a moment actually needs it (P1 X-Ray expansion, not P0).
+- New test: `DemoFixtureM02M03Test` (5 cases) -- exactly 3 moments (`m01,m02,m03`), M02's
+  missingness shape, M03's decision-fork labeling + 22-player scene, schema/integrity validity,
+  fixture-level `synthetic`/`scenarioVersion` labeling still present.
+- Fixed fallout from extending the shared fixture file (not new bugs, expected consequences):
+  `DemoFixtureM01Test`'s SHA-256 digest-pin updated to the new real file hash (verified via
+  `shasum -a 256`, not guessed); `MatchControllerTest`'s two snapshot-count assertions updated
+  (2 -> 5 total snapshots, 1 -> 4 for the `startMs=1316000` filter) and renamed
+  (`...ReturnsBothSnapshotsOrderedByClock` -> `...ReturnsAllSnapshotsOrderedByClock`).
+- **Process note**: the first `./mvnw test` run after editing the fixture reported a false
+  green (used a stale `target/classes` resource copy left over from the earlier P0-10 live-smoke
+  session) -- caught by manually re-computing the file's SHA-256 and comparing against the test's
+  pinned constant before trusting the result, then re-ran with `./mvnw clean test` to confirm.
+- Verified: `(cd backend && ./mvnw clean test)` -> BUILD SUCCESS, 40/40 tests (35 prior + 5 new).
+
 ## Next task
-P0-11 — M02/M03 fixtures (Day 4). Author an off-ball snapshot pair + a decision-fork scene with
-a real PASS event (passer/receiver/defenders), so D1 (lane clearance) finally has genuine evidence
-to wire into the X-Ray endpoint. AC: three demonstrable moments, 22-player scene where required;
-missingness tests and scenario labeling.
+P0-12 — Evidence inspector (Day 4). Click an insight -> metric definition/time/ID + caveat, full
+keyboard support and a non-JS/no-WebGL fallback. Completes Gate G4 ("why does the AI say that?
+within one click").

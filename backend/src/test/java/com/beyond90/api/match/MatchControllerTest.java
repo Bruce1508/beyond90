@@ -50,21 +50,26 @@ class MatchControllerTest {
 	}
 
 	@Test
-	void snapshotsReturnsBothSnapshotsOrderedByClock() throws Exception {
+	void snapshotsReturnsAllSnapshotsOrderedByClock() throws Exception {
 		mockMvc.perform(get("/api/v1/matches/demo-001/snapshots"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.snapshots.length()").value(2))
+				.andExpect(jsonPath("$.snapshots.length()").value(5))
 				.andExpect(jsonPath("$.snapshots[0].snapshotId").value("snap_m01_a"))
 				.andExpect(jsonPath("$.snapshots[0].playerPoses.length()").value(22))
-				.andExpect(jsonPath("$.snapshots[1].snapshotId").value("snap_m01_b"));
+				.andExpect(jsonPath("$.snapshots[1].snapshotId").value("snap_m01_b"))
+				.andExpect(jsonPath("$.snapshots[2].snapshotId").value("snap_m02_a"))
+				.andExpect(jsonPath("$.snapshots[3].snapshotId").value("snap_m02_b"))
+				.andExpect(jsonPath("$.snapshots[4].snapshotId").value("snap_m03_a"))
+				.andExpect(jsonPath("$.snapshots[4].playerPoses.length()").value(22));
 	}
 
 	@Test
 	void snapshotsHonorsTimeRangeFilter() throws Exception {
 		mockMvc.perform(get("/api/v1/matches/demo-001/snapshots").param("startMs", "1316000"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("$.snapshots.length()").value(1))
-				.andExpect(jsonPath("$.snapshots[0].snapshotId").value("snap_m01_b"));
+				.andExpect(jsonPath("$.snapshots.length()").value(4))
+				.andExpect(jsonPath("$.snapshots[0].snapshotId").value("snap_m01_b"))
+				.andExpect(jsonPath("$.snapshots[3].snapshotId").value("snap_m03_a"));
 	}
 
 	@Test
