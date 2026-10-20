@@ -50,10 +50,7 @@ public final class BranchSimulator {
 		long fullDurationMs = fullDistance == 0 ? 0 : Math.round(fullDistance / speed * 1000);
 		long cappedFullDurationMs = Math.min(fullDurationMs, MAX_DURATION_MS);
 
-		List<Fixture.PlayerPose> considered = defenders.stream()
-				.filter(d -> !d.playerId().equals(action.actorId()))
-				.filter(d -> action.targetActorId() == null || !d.playerId().equals(action.targetActorId()))
-				.toList();
+		List<Fixture.PlayerPose> considered = defenders.stream().filter(d -> !d.playerId().equals(action.actorId())).toList();
 
 		double nearestDefenderMeters = Double.POSITIVE_INFINITY;
 		double collisionFraction = Double.NaN;
@@ -121,14 +118,10 @@ public final class BranchSimulator {
 		if (distanceToBall > POSSESSION_RADIUS_METERS) {
 			throw new InvalidActionException("Actor does not possess the ball: " + action.actorId());
 		}
-		if (action.type() == ActionType.PASS) {
-			if (action.targetActorId() == null || action.targetActorId().equals(action.actorId())) {
-				throw new InvalidActionException("PASS target must be a different player than the actor");
-			}
-			findPose(baseSnapshot, action.targetActorId())
-					.orElseThrow(() -> new InvalidActionException("PASS target player not found: " + action.targetActorId()));
-		}
 		Fixture.Point target = action.target();
+		if (action.type() == ActionType.PASS && Math.hypot(target.x() - actorPose.x(), target.y() - actorPose.y()) < POSSESSION_RADIUS_METERS) {
+			throw new InvalidActionException("PASS target must be meaningfully different from the actor's current position");
+		}
 		if (target.x() < 0 || target.x() > pitch.lengthMeters() || target.y() < 0 || target.y() > pitch.widthMeters()) {
 			throw new InvalidActionException("Target destination is out of pitch bounds");
 		}

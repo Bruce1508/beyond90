@@ -310,3 +310,65 @@ endpoint: map `InvalidActionException` -> 422 in `ApiExceptionHandler`, resolve 
 fixture immutability across 100 branch calls (per the doc's golden test list). Then P0-15 (branch
 UX: Original/Alternative toggle + trajectory preview), closing Gate G5 ("what if pass vs shoot?
 interactive, calculated, truthful").
+
+## Correction before P0-14 — P0-13's `SimulationAction` did not match the wire contract
+- Caught while reading `contracts/openapi.yaml` before building the API layer: `SimulateRequest`
+  only has `scenarioVersion`/`action`/`target`/`seed` — no receiver player ID. P0-13's
+  `SimulationAction(type, actorId, targetActorId, target)` invented a field the real contract
+  doesn't have.
+- Fixed at the root (not patched around): dropped `targetActorId` from `SimulationAction` (now
+  `type, actorId, target`); `BranchSimulator`'s PASS validation changed from "target a different,
+  existing player" to "target must be >= `POSSESSION_RADIUS_METERS` from the actor's own current
+  position" (a degenerate zero-distance pass is still rejected, just without inventing a receiver
+  identity); the defender-exclusion filter now excludes only the actor, not a non-existent
+  receiver. Updated `BranchSimulatorTest` accordingly (same 11 cases, `passTargetingSelf_rejected`
+  renamed to `passTargetingOwnPosition_rejected`).
+- Re-verified: `(cd backend && ./mvnw clean test)` -> BUILD SUCCESS, 51/51 (unchanged count,
+  same tests re-pointed at the corrected shape).
+
+## P0-14 — Branch API + tests — DONE
+- New in `com.beyond90.api.simulation`: `SimulationService` (resolves a moment's actor/base
+  snapshot/pitch/attack-direction/opposing-defenders from the `Fixture`, the same way
+  `XRayService` resolves a moment for its endpoint), `SimulationController` (`POST
+  /api/v1/moments/{momentId}/simulate`), and wire DTOs added to `SimulationDtos`
+  (`PointDto`/`SimulateRequestDto`/`BranchFrameDto`/`BranchResultDto`) matching
+  `contracts/openapi.yaml`'s `SimulateRequest`/`BranchResult` schemas exactly — no contract
+  changes needed.
+- Validation order in `SimulationService.simulate`: `scenarioVersion` must match the loaded
+  fixture's (rejects a stale client replaying against a since-changed fixture) -> moment must
+  have an `actorId`/`baseSnapshotId` (m01/m02 don't — they're not decision-fork moments) ->
+  requested `action` must be in the moment's own `availableActions` list -> `action` must be
+  PASS or SHOOT (CARRY is a declared P1 value in the contract's enum with no engine support yet,
+  rejected cleanly rather than faked) -> `target` must be present. All five rejection paths throw
+  `InvalidActionException`, newly mapped in `ApiExceptionHandler` to HTTP 422
+  (`application/problem+json`, matching the X-Ray endpoint's existing problem-response style).
+- Attack direction is resolved from `fixture.periods()` at the moment's actual `startMs` (not the
+  team's nominal `firstHalfAttackDirection`) — m03 sits in `SECOND_HALF` (`startMs=3,000,000` >=
+  the second period's `2,800,000`), where blue's attack direction flips to `RIGHT_TO_LEFT`; using
+  the team's first-half default would have pointed the goal-line check at the wrong end of the
+  pitch.
+- Idempotency: in-memory `ConcurrentHashMap<String, BranchResultDto>` keyed by
+  `momentId + "|" + Idempotency-Key` header (when present) — a replayed key returns the exact
+  cached `BranchResultDto` (same `branchId`) instead of recomputing, proven by a test that sends
+  two different request bodies under the same key and asserts identical `branchId`s back.
+  Unbounded (no TTL/eviction) — fine for this single-process synthetic demo; flagged in code as
+  a `ponytail` simplification with an upgrade path if this ever serves real concurrent traffic.
+- `BranchResult`'s wire schema has no `outcome`/`reachedTarget`/`shotOnTarget`/`nearestDefenderMeters`
+  fields (only `frames` + `caveats`) — the engine's richer `SimulationResult` is folded into two
+  `caveats` strings: a fixed disclosure line (synthetic kinematics, unmodeled fatigue/intent/
+  goalkeeper anticipation/tracking error) plus an outcome-specific line (e.g. "Outcome: BLOCKED.
+  Nearest defender approach: 0.3m. Path length: 4.2m.") — preserves the "label branch results
+  clearly" requirement without inventing new contract fields.
+- 12 new tests: 8 in `SimulationServiceTest` (happy path, mismatched scenarioVersion, action not
+  in availableActions, unknown moment 404, moment without actor/snapshot, missing target,
+  idempotent replay, independent keys) + 4 in `SimulationControllerTest` (happy path over
+  MockMvc, CARRY -> 422 problem+json, unknown moment -> 404 problem+json, and the AC's own
+  **100 branch calls across both actions, then `assertThat(fixtureAfter).isEqualTo(fixtureBefore)`**
+  proving parent-fixture immutability).
+- Verified: `(cd backend && ./mvnw clean test)` -> BUILD SUCCESS, 63/63 tests (51 prior + 12 new).
+
+## Next task
+P0-15 — Branch UX (Day 5). Original/Alternative toggle + trajectory preview on the pitch viewer,
+wiring the frontend to `POST /simulate`; branch result must be visibly different from the
+original and clearly marked as simulated (per the contract's `simulated: true` field and the
+caveats text). Closes Gate G5 ("what if pass vs shoot? interactive, calculated, truthful").

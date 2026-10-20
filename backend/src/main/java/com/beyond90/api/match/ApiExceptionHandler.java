@@ -1,5 +1,6 @@
 package com.beyond90.api.match;
 
+import com.beyond90.api.simulation.InvalidActionException;
 import com.beyond90.api.xray.MomentNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,6 +21,15 @@ public class ApiExceptionHandler {
 	@ExceptionHandler(MomentNotFoundException.class)
 	public ResponseEntity<ProblemDetail> handleMomentNotFound(MomentNotFoundException exception) {
 		return notFound(exception.getMessage());
+	}
+
+	@ExceptionHandler(InvalidActionException.class)
+	public ResponseEntity<ProblemDetail> handleInvalidAction(InvalidActionException exception) {
+		ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, exception.getMessage());
+		problem.setTitle("Invalid intervention or domain constraint");
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+				.contentType(MediaType.APPLICATION_PROBLEM_JSON)
+				.body(problem);
 	}
 
 	private static ResponseEntity<ProblemDetail> notFound(String detail) {

@@ -23,8 +23,8 @@ public final class SimulationDtos {
 		MISS
 	}
 
-	/** {@code targetActorId} is required for PASS (the intended receiver) and ignored for SHOOT. */
-	public record SimulationAction(ActionType type, String actorId, String targetActorId, Fixture.Point target) {}
+	/** {@code target} is a pitch-metres destination only — contracts/openapi.yaml's SimulateRequest has no receiver player ID. */
+	public record SimulationAction(ActionType type, String actorId, Fixture.Point target) {}
 
 	public record TrajectoryPointDto(long tMs, double ballX, double ballY, double ballZ) {}
 
@@ -38,4 +38,24 @@ public final class SimulationDtos {
 			boolean reachedTarget,
 			boolean shotOnTarget,
 			Outcome outcome) {}
+
+	// --- Wire shapes for contracts/openapi.yaml SimulateRequest/BranchResult ---
+
+	public record PointDto(double x, double y) {}
+
+	/** {@code action} is a raw string so an unsupported value (e.g. CARRY, P1) can be rejected as 422 rather than failing JSON binding. */
+	public record SimulateRequestDto(String scenarioVersion, String action, PointDto target, long seed) {}
+
+	public record BranchFrameDto(long tMs, PointDto ball, double ballHeightMeters) {}
+
+	public record BranchResultDto(
+			String branchId,
+			String momentId,
+			String baseSnapshotId,
+			boolean originalUnchanged,
+			boolean simulated,
+			String engineVersion,
+			long seed,
+			List<BranchFrameDto> frames,
+			List<String> caveats) {}
 }

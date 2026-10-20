@@ -31,8 +31,8 @@ class BranchSimulatorTest {
 
 	@Test
 	void sameSnapshotSeedAction_producesIdenticalTrajectory() {
-		var snapshot = snapshot(20, 34, pose("actor", 20, 34), pose("receiver", 35, 34));
-		var action = new SimulationAction(ActionType.PASS, "actor", "receiver", point(35, 34));
+		var snapshot = snapshot(20, 34, pose("actor", 20, 34));
+		var action = new SimulationAction(ActionType.PASS, "actor", point(35, 34));
 
 		var result1 = BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(), action, 42L);
 		var result2 = BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(), action, 42L);
@@ -42,9 +42,9 @@ class BranchSimulatorTest {
 
 	@Test
 	void passWithDefenderOnLine_intercepted() {
-		var snapshot = snapshot(20, 34, pose("actor", 20, 34), pose("receiver", 35, 34));
+		var snapshot = snapshot(20, 34, pose("actor", 20, 34));
 		var defender = pose("def-1", 28, 34); // sits exactly on the straight pass line
-		var action = new SimulationAction(ActionType.PASS, "actor", "receiver", point(35, 34));
+		var action = new SimulationAction(ActionType.PASS, "actor", point(35, 34));
 
 		var result = BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(defender), action, 1L);
 
@@ -56,9 +56,9 @@ class BranchSimulatorTest {
 
 	@Test
 	void passWithDefenderWellClear_completed() {
-		var snapshot = snapshot(20, 34, pose("actor", 20, 34), pose("receiver", 35, 34));
+		var snapshot = snapshot(20, 34, pose("actor", 20, 34));
 		var defender = pose("def-1", 28, 50); // 16m off the line, well outside the collision radius
-		var action = new SimulationAction(ActionType.PASS, "actor", "receiver", point(35, 34));
+		var action = new SimulationAction(ActionType.PASS, "actor", point(35, 34));
 
 		var result = BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(defender), action, 1L);
 
@@ -70,7 +70,7 @@ class BranchSimulatorTest {
 	@Test
 	void shootInsideGoalMouth_onTarget() {
 		var snapshot = snapshot(95, 34, pose("shooter", 95, 34));
-		var action = new SimulationAction(ActionType.SHOOT, "shooter", null, point(105, 34));
+		var action = new SimulationAction(ActionType.SHOOT, "shooter", point(105, 34));
 
 		var result = BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(), action, 1L);
 
@@ -82,7 +82,7 @@ class BranchSimulatorTest {
 	@Test
 	void shootOutsideGoalRectangle_miss() {
 		var snapshot = snapshot(95, 34, pose("shooter", 95, 34));
-		var action = new SimulationAction(ActionType.SHOOT, "shooter", null, point(105, 50));
+		var action = new SimulationAction(ActionType.SHOOT, "shooter", point(105, 50));
 
 		var result = BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(), action, 1L);
 
@@ -94,7 +94,7 @@ class BranchSimulatorTest {
 	void shootBlockedByDefenderOnPath_blocked() {
 		var snapshot = snapshot(95, 34, pose("shooter", 95, 34));
 		var defender = pose("def-1", 100, 34); // sits exactly on the shot line
-		var action = new SimulationAction(ActionType.SHOOT, "shooter", null, point(105, 34));
+		var action = new SimulationAction(ActionType.SHOOT, "shooter", point(105, 34));
 
 		var result = BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(defender), action, 1L);
 
@@ -105,8 +105,8 @@ class BranchSimulatorTest {
 
 	@Test
 	void actorNotNearBall_rejected() {
-		var snapshot = snapshot(20, 34, pose("actor", 50, 50), pose("receiver", 35, 34));
-		var action = new SimulationAction(ActionType.PASS, "actor", "receiver", point(35, 34));
+		var snapshot = snapshot(20, 34, pose("actor", 50, 50));
+		var action = new SimulationAction(ActionType.PASS, "actor", point(35, 34));
 
 		assertThatThrownBy(() -> BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(), action, 1L))
 				.isInstanceOf(InvalidActionException.class)
@@ -114,19 +114,19 @@ class BranchSimulatorTest {
 	}
 
 	@Test
-	void passTargetingSelf_rejected() {
+	void passTargetingOwnPosition_rejected() {
 		var snapshot = snapshot(20, 34, pose("actor", 20, 34));
-		var action = new SimulationAction(ActionType.PASS, "actor", "actor", point(35, 34));
+		var action = new SimulationAction(ActionType.PASS, "actor", point(21, 34)); // 1m away, within POSSESSION_RADIUS
 
 		assertThatThrownBy(() -> BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(), action, 1L))
 				.isInstanceOf(InvalidActionException.class)
-				.hasMessageContaining("different player");
+				.hasMessageContaining("meaningfully different");
 	}
 
 	@Test
 	void shootTargetNotOnGoalLine_rejected() {
 		var snapshot = snapshot(95, 34, pose("shooter", 95, 34));
-		var action = new SimulationAction(ActionType.SHOOT, "shooter", null, point(100, 34));
+		var action = new SimulationAction(ActionType.SHOOT, "shooter", point(100, 34));
 
 		assertThatThrownBy(() -> BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(), action, 1L))
 				.isInstanceOf(InvalidActionException.class)
@@ -135,8 +135,8 @@ class BranchSimulatorTest {
 
 	@Test
 	void destinationOutsidePitch_rejected() {
-		var snapshot = snapshot(20, 34, pose("actor", 20, 34), pose("receiver", 35, 34));
-		var action = new SimulationAction(ActionType.PASS, "actor", "receiver", point(35, 200));
+		var snapshot = snapshot(20, 34, pose("actor", 20, 34));
+		var action = new SimulationAction(ActionType.PASS, "actor", point(35, 200));
 
 		assertThatThrownBy(() -> BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(), action, 1L))
 				.isInstanceOf(InvalidActionException.class)
@@ -145,8 +145,8 @@ class BranchSimulatorTest {
 
 	@Test
 	void trajectorySampledAtFixedTimestep() {
-		var snapshot = snapshot(20, 34, pose("actor", 20, 34), pose("receiver", 35, 34));
-		var action = new SimulationAction(ActionType.PASS, "actor", "receiver", point(35, 34));
+		var snapshot = snapshot(20, 34, pose("actor", 20, 34));
+		var action = new SimulationAction(ActionType.PASS, "actor", point(35, 34));
 
 		var result = BranchSimulator.simulate(PITCH, ATTACK_LEFT_TO_RIGHT, snapshot, List.of(), action, 1L);
 
