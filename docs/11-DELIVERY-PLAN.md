@@ -36,8 +36,8 @@ Timebox: **Oct 19 through Oct 27, 2026** (deadline 23:59 Pacific, Oct 28 02:59 T
 ## Day 5 — Oct 23: Bounded counterfactual
 - [x] **P0-13 Pure simulator (3h)**. PASS and SHOOT actions, deterministic seed, bounded <=8s trajectory; speed/goal intersection; no global mutable state. **AC:** golden runs byte-equivalent (except transient IDs), original digest unchanged.
 - [x] **P0-14 Branch API + tests (1.5h)**. POST `/simulate`, error handling, limits, idempotency. **AC:** invalid action 422; parent untouched across 100 runs.
-- [ ] **P0-15 Branch UX (1.5h)**. Original/Alternative toggle + trajectory preview + differences. **AC:** branch is visibly different and marked simulated.
-**Gate G5:** 'What if pass vs shoot?' is interactive, calculated, and truthful (not free-form AI text).
+- [x] **P0-15 Branch UX (1.5h)**. Original/Alternative toggle + trajectory preview + differences. **AC:** branch is visibly different and marked simulated.
+**Gate G5:** 'What if pass vs shoot?' is interactive, calculated, and truthful (not free-form AI text). — **MET**, verified live via Playwright (see PROGRESS.md).
 
 ## Day 6 — Oct 24: Real Microsoft Foundry and credible agent workflow
 - [ ] **P0-16 Java Foundry spike (1.5h)**. Verify deployment, credentials, Java API call, validate shape/timeouts. **AC:** actual model inference observed + sanitised trace. If unavailable, log blocker immediately.

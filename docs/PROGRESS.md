@@ -367,8 +367,50 @@ interactive, calculated, truthful").
   proving parent-fixture immutability).
 - Verified: `(cd backend && ./mvnw clean test)` -> BUILD SUCCESS, 63/63 tests (51 prior + 12 new).
 
+## P0-15 — Branch UX — DONE
+- `api.ts`: `postJson` helper (mirrors `getJson`, surfaces a Problem's `detail` text on non-2xx)
+  plus `simulateMoment(momentId, request)` and `SimulateRequest`/`BranchFrame`/`BranchResult`
+  types matching the P0-14 contract exactly.
+- `Pitch2D.tsx`/`Pitch3D.tsx`/`PitchViewer.tsx`: new optional `branchTrajectory?: {x,y}[]` prop,
+  rendered as a **solid violet** polyline/Line — deliberately a different color and style from
+  the X-Ray evidence overlay's amber dashed line, so a simulated branch can never be mistaken
+  for real evidence. `Pitch2D`'s and `Pitch3D`'s existing `geometry` prop (evidence, tied to real
+  `evidenceIds`) is untouched; the branch trajectory is a separate prop precisely so the two
+  concepts — observed evidence vs. simulated what-if — never share a code path.
+- New `BranchPanel.tsx`: an Original/Alternative toggle (two real `<button>`s with
+  `aria-pressed`, same interaction pattern as `XRayPanel`'s evidence buttons) that, when
+  "Alternative" is active, shows a `SIMULATED — NOT A REAL EVENT` badge, the engine
+  version/seed/branchId, and the branch's `caveats` list verbatim (never summarized away).
+- `page.tsx`: two preset buttons, "What if — PASS?" and "What if — SHOOT?", both targeting
+  moment `m03` (the only authored decision-fork moment) with fixed, hand-picked targets and a
+  fixed seed (`BRANCH_SEED=1`) — no click-to-target UI yet, out of scope for this task (P1); the
+  seed is fixed only for demo repeatability, not because the engine needs it (it's already fully
+  deterministic). `PitchViewer`'s `branchTrajectory` prop is only populated while
+  `showingAlternative` is true, so switching to "Original" genuinely removes the overlay rather
+  than just graying it out.
+- **Found and fixed a real rendering bug during live verification** (not caught by
+  `pnpm lint`/`pnpm build`, which are type/syntax checks, not visual ones): the 3D branch
+  trajectory `<Line>` was invisible on first click — it sat exactly on the pitch mesh's y=0
+  surface and z-fought with it. The X-Ray evidence overlay already had the fix for this exact
+  problem (`+0.3` to the world-space y/height component), just never applied to the new branch
+  line. Caught via Playwright screenshot (not by reading the code), fixed, re-verified.
+- Verified: `(cd frontend && pnpm lint && pnpm build)` -> both green (twice — before and after
+  the z-fighting fix). **Verified live** via Playwright against the real running backend
+  (`./mvnw spring-boot:run`) + frontend (`pnpm dev`): clicked "What if — SHOOT?" -> toggle
+  switched to "Alternative (simulated)" automatically, panel showed the real
+  `engineVersion=SIM.v1`, `seed=1`, a real `branchId`, and caveats including
+  `Outcome: BLOCKED. Nearest defender approach: 0.0m. Path length: 17.0m.` (red_01 sits exactly
+  on the goal-line shot path in the real fixture — a legitimate BLOCKED outcome, not a forced
+  demo value); the violet trajectory line rendered on the pitch after the fix. Clicked "Original"
+  -> trajectory disappeared, button states swapped. 0 console errors (1 pre-existing, unrelated
+  `THREE.Clock` deprecation warning from the R3F library itself).
+- **Gate G5 ("what if pass vs shoot? interactive, calculated, truthful") MET** — both branches
+  are real HTTP round-trips through the P0-13 engine, not canned/free-form text; the BLOCKED
+  outcome in particular demonstrates the simulation is not rigged to always "succeed."
+
 ## Next task
-P0-15 — Branch UX (Day 5). Original/Alternative toggle + trajectory preview on the pitch viewer,
-wiring the frontend to `POST /simulate`; branch result must be visibly different from the
-original and clearly marked as simulated (per the contract's `simulated: true` field and the
-caveats text). Closes Gate G5 ("what if pass vs shoot? interactive, calculated, truthful").
+Day 6 (Oct 24) — Real Microsoft Foundry and credible agent workflow, starting with **P0-16 Java
+Foundry spike**: verify deployment, credentials, a real Java API call against Foundry, validate
+response shape/timeouts. AC: actual model inference observed + a sanitised trace. If Foundry
+access is unavailable, log the blocker immediately rather than stubbing around it — per
+AGENTS.md, do not fabricate "Foundry integration" with a fake/local call.

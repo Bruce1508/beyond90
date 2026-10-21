@@ -12,6 +12,7 @@ interface PitchViewerProps {
   playerPoses: PlayerPose[];
   ball: BallPosition | null;
   geometry?: GeometryOverlay[];
+  branchTrajectory?: { x: number; y: number }[];
 }
 
 /** AGENTS.md: "production build and core workflow must work without WebGL." */

@@ -50,6 +50,20 @@ async function getJson<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    const problem = (await response.json().catch(() => null)) as { detail?: string } | null;
+    const detail = problem?.detail ? ` — ${problem.detail}` : "";
+    throw new Error(`BEYOND90 API ${path} failed: HTTP ${response.status}${detail}`);
+  }
+  return response.json() as Promise<T>;
+}
+
 export function getMatch(matchId: string): Promise<MatchSummary> {
   return getJson(`/api/v1/matches/${matchId}`);
 }
@@ -102,4 +116,33 @@ export interface TimelineResponse {
 
 export function getTimeline(matchId: string): Promise<TimelineResponse> {
   return getJson(`/api/v1/matches/${matchId}/timeline`);
+}
+
+export interface SimulateRequest {
+  scenarioVersion: string;
+  action: "PASS" | "SHOOT" | "CARRY";
+  target?: { x: number; y: number };
+  seed: number;
+}
+
+export interface BranchFrame {
+  tMs: number;
+  ball: { x: number; y: number };
+  ballHeightMeters: number;
+}
+
+export interface BranchResult {
+  branchId: string;
+  momentId: string;
+  baseSnapshotId: string;
+  originalUnchanged: boolean;
+  simulated: boolean;
+  engineVersion: string;
+  seed: number;
+  frames: BranchFrame[];
+  caveats: string[];
+}
+
+export function simulateMoment(momentId: string, request: SimulateRequest): Promise<BranchResult> {
+  return postJson(`/api/v1/moments/${momentId}/simulate`, request);
 }

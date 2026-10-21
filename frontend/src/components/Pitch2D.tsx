@@ -7,14 +7,16 @@ interface Pitch2DProps {
   playerPoses: PlayerPose[];
   ball: BallPosition | null;
   geometry?: GeometryOverlay[];
+  branchTrajectory?: { x: number; y: number }[];
 }
 
 const XRAY_OVERLAY_COLOR = "#f59e0b";
+const BRANCH_TRAJECTORY_COLOR = "#a78bfa";
 
 const HOME_COLOR = "#3b82f6";
 const AWAY_COLOR = "#ef4444";
 
-export function Pitch2D({ players, homeTeam, playerPoses, ball, geometry = [] }: Pitch2DProps) {
+export function Pitch2D({ players, homeTeam, playerPoses, ball, geometry = [], branchTrajectory }: Pitch2DProps) {
   const teamByPlayerId = new Map(players.map((p) => [p.playerId, p.teamId]));
 
   return (
@@ -60,6 +62,18 @@ export function Pitch2D({ players, homeTeam, playerPoses, ball, geometry = [] }:
           <title>X-Ray evidence: {overlay.evidenceIds.join(", ")}</title>
         </polyline>
       ))}
+
+      {/* Simulated branch trajectory — synthetic kinematics, never real evidence. Solid, violet, distinct from the amber dashed evidence overlay above. */}
+      {branchTrajectory && (
+        <polyline
+          points={branchTrajectory.map((p) => `${p.x},${p.y}`).join(" ")}
+          fill="none"
+          stroke={BRANCH_TRAJECTORY_COLOR}
+          strokeWidth={0.5}
+        >
+          <title>Simulated branch (not real): synthetic ball path</title>
+        </polyline>
+      )}
     </svg>
   );
 }

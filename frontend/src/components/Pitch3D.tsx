@@ -12,11 +12,13 @@ interface Pitch3DProps {
   playerPoses: PlayerPose[];
   ball: BallPosition | null;
   geometry?: GeometryOverlay[];
+  branchTrajectory?: { x: number; y: number }[];
 }
 
 const HOME_COLOR = "#3b82f6";
 const AWAY_COLOR = "#ef4444";
 const XRAY_OVERLAY_COLOR = "#f59e0b";
+const BRANCH_TRAJECTORY_COLOR = "#a78bfa";
 
 /** Centroid of the first overlay's points, in world space -- the "camera X-Ray focus" target. */
 function overlayFocusTarget(geometry: GeometryOverlay[]): [number, number, number] | null {
@@ -49,7 +51,7 @@ function BallMarker({ ball }: { ball: BallPosition }) {
   );
 }
 
-export function Pitch3D({ players, homeTeam, playerPoses, ball, geometry = [] }: Pitch3DProps) {
+export function Pitch3D({ players, homeTeam, playerPoses, ball, geometry = [], branchTrajectory }: Pitch3DProps) {
   const teamByPlayerId = new Map(players.map((p) => [p.playerId, p.teamId]));
   // Stable array reference across re-renders (OrbitControls re-syncs its target whenever this
   // prop's identity changes, which would otherwise fight the user's own drag every frame).
@@ -81,6 +83,14 @@ export function Pitch3D({ players, homeTeam, playerPoses, ball, geometry = [] }:
             dashScale={4}
           />
         ))}
+        {/* Simulated branch trajectory — synthetic kinematics, never real evidence. Solid, violet, distinct from the amber dashed evidence overlay above. */}
+        {branchTrajectory && (
+          <Line
+            points={branchTrajectory.map((p) => toWorldPosition(p).map((n, i) => (i === 1 ? n + 0.3 : n)) as [number, number, number])}
+            color={BRANCH_TRAJECTORY_COLOR}
+            lineWidth={3}
+          />
+        )}
         <OrbitControls makeDefault target={focusTarget} minDistance={20} maxDistance={140} maxPolarAngle={Math.PI / 2.1} />
       </Canvas>
     </div>

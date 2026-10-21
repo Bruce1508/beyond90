@@ -6,6 +6,8 @@ import {
   getSnapshots,
   getTimeline,
   getXRay,
+  simulateMoment,
+  type BranchResult,
   type MatchSummary,
   type SnapshotsResponse,
   type TimelineMoment,
@@ -14,9 +16,17 @@ import {
 import { PitchViewer } from "@/components/PitchViewer";
 import { PlaybackControls } from "@/components/PlaybackControls";
 import { XRayPanel } from "@/components/XRayPanel";
+import { BranchPanel } from "@/components/BranchPanel";
 
 const MATCH_ID = "demo-001";
 const XRAY_MOMENT_ID = "m01";
+const BRANCH_MOMENT_ID = "m03";
+// Fixed, hand-picked targets for the demo's two preset branches (docs/04-FOOTBALL-ENGINES.md
+// section C: no click-to-target UI yet -- P1 scope). seed is fixed too: the engine is fully
+// deterministic, so a fixed seed doesn't privilege one outcome, it just makes the demo repeatable.
+const BRANCH_SEED = 1;
+const PASS_TARGET = { x: 10, y: 34 };
+const SHOOT_TARGET = { x: 0, y: 34 };
 
 /** Sparse curated snapshots only (contracts/openapi.yaml): show the latest
  * snapshot at or before the cursor, never an interpolated/fabricated position. */
@@ -39,6 +49,9 @@ export default function Home() {
   const [xray, setXray] = useState<XRayResponse | null>(null);
   const [xrayMoment, setXrayMoment] = useState<TimelineMoment | null>(null);
   const [xrayError, setXrayError] = useState<string | null>(null);
+  const [branch, setBranch] = useState<BranchResult | null>(null);
+  const [branchError, setBranchError] = useState<string | null>(null);
+  const [showingAlternative, setShowingAlternative] = useState(false);
   const rafRef = useRef<number | null>(null);
   const lastFrameTimeRef = useRef<number | null>(null);
 
@@ -110,6 +123,7 @@ export default function Home() {
         playerPoses={activeSnapshot?.playerPoses ?? []}
         ball={activeSnapshot?.ball ?? null}
         geometry={xray?.geometry}
+        branchTrajectory={showingAlternative ? branch?.frames.map((f) => f.ball) : undefined}
       />
       <PlaybackControls
         currentMs={currentMs}
@@ -144,6 +158,55 @@ export default function Home() {
       </button>
       {xrayError && <p className="text-sm text-red-400">Could not load X-Ray evidence: {xrayError}</p>}
       {xray && <XRayPanel xray={xray} moment={xrayMoment} />}
+
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setBranchError(null);
+            setShowingAlternative(false);
+            simulateMoment(BRANCH_MOMENT_ID, {
+              scenarioVersion: match.scenarioVersion,
+              action: "PASS",
+              target: PASS_TARGET,
+              seed: BRANCH_SEED,
+            })
+              .then((result) => {
+                setBranch(result);
+                setShowingAlternative(true);
+              })
+              .catch((err: Error) => setBranchError(err.message));
+          }}
+          className="rounded bg-violet-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          What if — PASS? ({BRANCH_MOMENT_ID})
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setBranchError(null);
+            setShowingAlternative(false);
+            simulateMoment(BRANCH_MOMENT_ID, {
+              scenarioVersion: match.scenarioVersion,
+              action: "SHOOT",
+              target: SHOOT_TARGET,
+              seed: BRANCH_SEED,
+            })
+              .then((result) => {
+                setBranch(result);
+                setShowingAlternative(true);
+              })
+              .catch((err: Error) => setBranchError(err.message));
+          }}
+          className="rounded bg-violet-700 px-3 py-1.5 text-sm font-medium text-white hover:bg-violet-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        >
+          What if — SHOOT? ({BRANCH_MOMENT_ID})
+        </button>
+      </div>
+      {branchError && <p className="text-sm text-red-400">Could not simulate branch: {branchError}</p>}
+      {branch && (
+        <BranchPanel branch={branch} showingAlternative={showingAlternative} onToggle={() => setShowingAlternative((s) => !s)} />
+      )}
     </main>
   );
 }
