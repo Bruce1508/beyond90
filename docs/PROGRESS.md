@@ -414,3 +414,26 @@ Foundry spike**: verify deployment, credentials, a real Java API call against Fo
 response shape/timeouts. AC: actual model inference observed + a sanitised trace. If Foundry
 access is unavailable, log the blocker immediately rather than stubbing around it — per
 AGENTS.md, do not fabricate "Foundry integration" with a fake/local call.
+
+## BLOCKER — P0-16 cannot start: no Foundry credentials in this environment (2026-10-21)
+- Checked before attempting P0-16, per `docs/10-PLATFORM-AND-OPS.md`'s own instruction ("If
+  Foundry access or credits are unavailable, immediately document the blocker... resolve real
+  provider integration before claim of category fit or submission").
+- `docs/10-PLATFORM-AND-OPS.md` names the expected env vars: `FOUNDRY_BASE_URL`,
+  `FOUNDRY_DEPLOYMENT`, `FOUNDRY_API_KEY` (local fallback only), `AZURE_CLIENT_ID` (when needed).
+  None of these are set in this shell (`env | grep -i "FOUNDRY\|AZURE"` -> empty).
+- No `.env*` file exists anywhere in the repo (`find . -iname "*.env*"` -> empty, excluding
+  `node_modules`/`.git`/`target`).
+- `backend/src/main/resources/application.properties` has exactly one line
+  (`spring.application.name=beyond90-api`) — no Foundry/Azure config block has ever been added.
+- **Not attempting**: a fake/local stand-in call that pretends to be Foundry inference. P0-16's
+  own AC requires "actual model inference observed + a sanitised trace" — that's unsatisfiable
+  without a real deployment, and AGENTS.md explicitly forbids fabricating integration claims.
+- **Unblocking this requires a human**: an Azure AI Foundry resource + model deployment
+  provisioned, and `FOUNDRY_BASE_URL`/`FOUNDRY_DEPLOYMENT`/`FOUNDRY_API_KEY` (or
+  `AZURE_CLIENT_ID` for managed identity) supplied via environment variables or a local
+  `.env`/secrets file not committed to the repo. Until then, P0-16/17/18 (all of Day 6) stay
+  blocked.
+- Per the doc's own fallback contract, this does not block the rest of the app: the frontend's
+  deterministic fallback (template-based, no model call) is the documented behavior when Foundry
+  is unreachable, and nothing built in P0-07 through P0-15 depends on Foundry.
