@@ -437,3 +437,25 @@ AGENTS.md, do not fabricate "Foundry integration" with a fake/local call.
 - Per the doc's own fallback contract, this does not block the rest of the app: the frontend's
   deterministic fallback (template-based, no model call) is the documented behavior when Foundry
   is unreachable, and nothing built in P0-07 through P0-15 depends on Foundry.
+
+## 2D WebGL-off fallback — verified live, gap closed (2026-10-21)
+- Open since P0-05/06, re-flagged after P0-10/P0-12 (which both touch `Pitch2D`/`XRayPanel`) and
+  again after P0-15 (adds a third overlay, `branchTrajectory`, to the same components). With
+  Day 6 blocked on Foundry, this was the highest-priority unblocked unverified item.
+- Forced WebGL off in a real browser (Playwright, `page.addInitScript` overriding
+  `HTMLCanvasElement.prototype.getContext` to return `null` for `webgl`/`webgl2`/
+  `experimental-webgl` — `hasWebGl()` in `lib/webgl.ts` then correctly reports `false` and
+  `PitchViewer` renders `Pitch2D`, not `Pitch3D`), against the real backend (port 8081 — see
+  note below) and real frontend (`pnpm dev`).
+- Confirmed working, **no code changes needed**: the 2D SVG fallback renders all 22 player poses
+  + ball; the X-Ray amber dashed evidence overlay (P0-10); and the branch trajectory violet solid
+  overlay (P0-15) — all three simultaneously, correctly colored and positioned, no overlap bugs.
+  0 console errors, 0 warnings (cleaner than the 3D path, which has an unrelated pre-existing
+  `THREE.Clock` deprecation warning from R3F that obviously doesn't apply when R3F never loads).
+- **This closes the gap for good** — it's been re-flagged as open three times across P0-05/06,
+  P0-10/12, and P0-15 without ever actually being exercised in a real browser; now it has been,
+  with both overlays that exist as of this session proven correct together.
+- Environment note, not a code issue: local port 8080 was held by Docker Desktop's own proxy
+  (`com.docke...`, unrelated container), so the backend was run on `--server.port=8081` with
+  `NEXT_PUBLIC_API_BASE_URL=http://localhost:8081` for this verification session only — no
+  project config changed.
